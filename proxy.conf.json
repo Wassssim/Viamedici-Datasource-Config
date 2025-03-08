@@ -1,0 +1,7 @@
+{
+  "/web-grid-api/*": {
+    "target": "http://localhost:4500",
+    "secure": false,
+    "timeout": 600000
+  }
+}

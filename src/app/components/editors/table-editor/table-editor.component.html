@@ -1,0 +1,159 @@
+<div class="container">
+  <h2>Table Editor - {{ tableName }}</h2>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div class="input-group mb-3 search-input">
+    <input
+      type="text"
+      [(ngModel)]="searchString"
+      class="form-control"
+      placeholder="Search"
+      aria-label="Search"
+      aria-describedby="basic-addon2"
+    />
+    <div class="input-group-append">
+      <button
+        class="btn btn-outline-secondary"
+        type="button"
+        (click)="search()"
+      >
+        Search
+      </button>
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <app-dropdown
+      *ngIf="columns.length > 0"
+      [items]="columnNames"
+      [placeholder]="'Column: All'"
+      [displayFn]="displayColumnDropdownLabel"
+      (selectionChange)="onColumnSelect($event)"
+    ></app-dropdown>
+
+    <button class="btn btn-primary my-3" (click)="openModal()">
+      Add New Row
+    </button>
+  </div>
+
+  <!-- Add Row Modal -->
+  <div id="addRowModal" class="modal" [ngClass]="{ 'show d-block': showModal }">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New Row</h5>
+          <button type="button" class="close" (click)="closeModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="form" (ngSubmit)="addRow()" *ngIf="form">
+            <div *ngFor="let column of columns" class="form-group">
+              <label [for]="column.name">{{ column.name }}</label>
+              <ng-container [ngSwitch]="column.type">
+                <input
+                  *ngSwitchCase="'number'"
+                  type="number"
+                  class="form-control"
+                  formControlName="{{ column.name }}"
+                />
+                <input
+                  *ngSwitchCase="'string'"
+                  type="text"
+                  class="form-control"
+                  formControlName="{{ column.name }}"
+                />
+                <input
+                  *ngSwitchCase="'datetime'"
+                  type="datetime-local"
+                  class="form-control"
+                  formControlName="{{ column.name }}"
+                />
+                <input
+                  *ngSwitchCase="'boolean'"
+                  type="checkbox"
+                  formControlName="{{ column.name }}"
+                />
+                <input
+                  *ngSwitchDefault
+                  type="text"
+                  class="form-control"
+                  formControlName="{{ column.name }}"
+                />
+              </ng-container>
+              <div
+                *ngIf="
+                  form.controls[column.name].invalid &&
+                  form.controls[column.name].touched
+                "
+                class="error-text"
+              >
+                {{ column.name }} is required
+              </div>
+            </div>
+
+            <div class="modal-action-buttons">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="closeModal()"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Existing Rows -->
+  <div class="no-rows" *ngIf="rows.length === 0"><h3>No rows</h3></div>
+
+  <div class="table-container" *ngIf="rows.length > 0">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th *ngFor="let column of columns">{{ column.name }}</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows; let i = index">
+          <td *ngFor="let column of columns">
+            <ng-container *ngIf="!editMode[i]; else editField">
+              {{ row[column.name] }}
+            </ng-container>
+            <ng-template #editField>
+              <input class="form-control" [(ngModel)]="row[column.name]" />
+            </ng-template>
+          </td>
+          <td class="sticky-actions">
+            <button
+              *ngIf="!editMode[i]"
+              class="btn btn-warning btn-sm"
+              (click)="editRow(i)"
+            >
+              Edit
+            </button>
+            <button
+              *ngIf="editMode[i]"
+              class="btn btn-success btn-sm"
+              (click)="saveRow(row, i)"
+            >
+              Save
+            </button>
+            <button
+              class="btn btn-danger btn-sm"
+              (click)="deleteRow(row.id, i)"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

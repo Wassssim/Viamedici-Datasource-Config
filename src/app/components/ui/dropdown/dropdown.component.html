@@ -1,0 +1,21 @@
+<div class="dropdown">
+  <button
+    class="btn btn-primary dropdown-toggle"
+    type="button"
+    data-toggle="dropdown"
+    aria-haspopup="true"
+    aria-expanded="false"
+  >
+    {{ selectedItem ? displayFn(selectedItem) : placeholder }}
+  </button>
+
+  <div class="dropdown-menu">
+    <a
+      *ngFor="let item of items"
+      class="dropdown-item"
+      (click)="selectItem(item)"
+    >
+      {{ item }}
+    </a>
+  </div>
+</div>

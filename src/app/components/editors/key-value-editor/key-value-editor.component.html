@@ -1,0 +1,27 @@
+<div class="editor-container">
+  <table>
+    <tbody>
+      <tr *ngFor="let entry of data; let i = index; trackBy: trackByIndex">
+        <td>
+          <input
+            type="text"
+            [value]="entry.key"
+            (input)="updateKey(i, $event.target.value)"
+          />
+        </td>
+        <td>
+          <input
+            type="text"
+            [value]="entry.value"
+            (input)="updateValue(i, $event.target.value)"
+          />
+        </td>
+        <td>
+          <button (click)="deleteEntry(i)">🗑</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <button (click)="addEntry()">Add Entry</button>
+  <button (click)="updateFile()">Save</button>
+</div>

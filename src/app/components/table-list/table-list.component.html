@@ -1,0 +1,16 @@
+<div class="table-selector">
+  <button class="dropdown-btn" (click)="toggleDropdown()">
+    {{ selectedTable || "Select a Table" }}
+    <span class="arrow" [class.open]="dropdownOpen">▼</span>
+  </button>
+
+  <ul
+    *ngIf="dropdownOpen"
+    class="dropdown-menu"
+    [ngClass]="{ open: dropdownOpen }"
+  >
+    <li *ngFor="let table of tables" (click)="selectTable(table)">
+      {{ table }}
+    </li>
+  </ul>
+</div>

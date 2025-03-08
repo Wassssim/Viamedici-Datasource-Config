@@ -1,0 +1,179 @@
+#0. Connect to the server with ssh and become sudo:
+	
+	ssh viadev@192.168.150.51
+	sudo -i
+
+
+#1. Install nodejs and npm:
+
+	
+	curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
+	bash nodesource_setup.sh
+	apt install nodejs
+	
+	#When log/caching error coming, when start application as service:
+	sudo npm cache clean --force
+	npm update -g --verbose	
+
+#2. Check nodejs and npm version: 
+
+	"node -v"
+
+	Output:
+	v12.xxx
+
+	and "npm -v"
+	
+	Output:
+	6.07.4
+
+#3. Install screen: 
+
+	apt install screen
+	screen -v
+
+#4. Oracle client: 
+#Zur Installation des benötigten Oracle-Instant CLient (Version passend zur DB, hier 12.2) kann grundsätzlich gemäß https://help.ubuntu.com/community/Oracle%20Instant%20Client vorgegangen werden.
+
+#Den Oracle Instant Client RPM Pack für LInux (12.2 Basic) herunterladen:
+
+	URL: https://www.oracle.com/de/database/technologies/instant-client/linux-x51-64-downloads.html
+	File: oracle-instantclient12.2-basic-12.2.0.1.0-1.x51_64.rpm
+
+#und die Datei z.B. unter /opt/viamedici/VMTEMP bereitstellen.
+
+	scp -r "C:/Temp/Oracle/" viadev@192.168.150.51:/home/viadev
+
+#Mit ssh einloggen und root werden.
+	
+	ssh viadev@192.168.150.51
+	sudo -i
+	cd /home/viadev/Oracle 
+
+### alien wird benötigt um Fremdpakete zu installieren, die der apt install selbst nicht kann
+	apt install alien
+	alien -i oracle-instantclient12.2-basic-12.2.0.1.0-1.x51_64.rpm
+
+#Danach mittels:
+
+nano /etc/profile.d/oracle.sh 
+
+#die Datei erstellen und am Dateianfang (normalerweise ist sie noch leer) folgende Zeilen einfügen:
+
+export ORACLE_HOME=/usr/lib/oracle/12.2/client64
+export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export PATH=$PATH:$ORACLE_HOME/bin
+export NLS_LANG=.UTF8
+
+#Datei speichern und Editor beenden.
+
+#Nun erzeugt man noch eine Kopie einer Lib, die in beiden Namensversionen benötigt wird (keinen ln benutzen):
+
+cd /usr/lib/oracle/12.2/client64/lib/
+cp libclntsh.so.12.1 libclntsh.so
+ldconfig
+
+#fertig. 
+
+#4.1 check the oracle-path-variables in the screen
+# go into screen and export Variable LD_LIBRARY_PATH
+
+	export LD_LIBRARY_PATH=/usr/lib/oracle/12.2/client64/lib/
+
+#check the result: 
+
+	env | more 
+
+#hier muss die Variable LD_LIBRARY_PATH drin sein. 	
+
+
+####!Deployment/Update exportwebapp-Application Applikation: ####
+#NOTE!: Change the following in the documentation:
+#SSH-User: viadev or other ...
+#IP-Adress-Server: .51 or .othher ...
+#Domain-Server: 07 or other ...
+
+
+#1. Copy Application-Files from SVN to to Server: 
+	
+#1.1	copy all application files to your local system C:\temp\Version Comparison, without non svn files:
+	
+	-- node_modules
+	-- version-comparison.log
+
+#1.1	copy application files from your local system C:\temp\Version to home directory of the user viadev on demo server
+
+scp -r "C:/Temp/ExcelExportWebApp/" viadev@192.168.150.51:/home/viadev
+
+#1.2	on demo server: copy application files from your home directory to the application directory 
+
+#connect to server
+ssh viadev@192.168.150.51
+
+#make you to sudo
+sudo -i
+
+#delete all application files with: 
+
+cd /opt/viamedici/VMPROGRAMS/
+rm -r ExcelExportWebApp
+
+#copy application files from home-directory to application directory
+scp -r /home/viadev/ExcelExportWebApp/ /opt/viamedici/VMPROGRAMS/
+
+#delete files in home-directory
+rm -r /home/viadev/ExcelExportWebApp
+
+
+#2.0 install libraries
+cd /opt/viamedici/VMPROGRAMS/ExcelExportWebApp
+npm install
+
+#2.1 open the config and check it 
+ 
+nano /opt/viamedici/VMPROGRAMS/ExcelExportWebApp/config/viamedici-exportwebapp-config.ts
+
+#2.2 open backend-file and change the environment 
+
+nano /opt/viamedici/VMPROGRAMS/ExcelExportWebApp/server/routes/webgrid.ts
+
+#uncomment '//environment = "production";' in the line 24, result must be:
+
+environment = "production";
+
+#2.3 IT must configure the proxy entry here so that the application can be reached from outside the cloud. 
+
+
+#2.4 make/configure service-file in the folder 
+
+nano /etc/systemd/system/WebApp_Attributs_Wiki.service
+
+#content: 
+
+[Unit]
+Description=Attributs Wiki Web App
+
+[Service]
+Type=simple
+User=root
+Restart=on-failure
+WorkingDirectory=/mnt/epim_bin/VMPROGRAMS/Attributswiki Web App
+ExecStart=/usr/bin/npm run start-prod
+
+[Install]
+WantedBy=multi-user.target
+
+
+#2.5 start the application: 
+
+ systemctl enable WebApp_Attributs_Wiki.service
+ systemctl start WebApp_Attributs_Wiki.service
+
+
+#2.6 checkt the start of the application: 
+
+ systemctl status WebApp_Attributs_Wiki.service
+
+#2.7 check your application logfiles and url (access with extern domain): 
+nano /opt/viamedici/VMPROGRAMS/ExcelExportWebAppviamedici-webgrid.log
+https://knauf-test.viamedici.cloud/exportwebapp-fe/web-grid?mode=products&unit=together&columnNames=technical&languageISO=deu_deu&vkorg=1851

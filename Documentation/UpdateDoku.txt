@@ -1,0 +1,20 @@
+1. Dateien/Verzeichnisse die im Repository berücksichtigt werden zu einem Archiv komprimieren. Folgende Verzeichnisse/Module werden 
+nicht berücksichtigt:
+	-- node_modules
+	-- dist
+	-- viamedici-exportwebapp.log
+
+2. Dienst "viamedici-exportwebapp" auf dem Zielserver stoppen. 
+
+3. Archiv auf den Zielserver kopieren und die Daten des Archivs im Applikationsverzeichnis (D:\VMPROGRAMS\WebApp exportwebapp) entpacken.
+
+4. viamedici-exportwebapp-config.ts öffnen und Daten prüfen/anpassen. 
+
+5. Shell im Applikationsverzeichnis als Administrator starten
+
+6. "npm install" ausführen. 
+
+7. "npm run build" ausführen. 
+
+8. Dienst WebApplication auf dem Server starten
+

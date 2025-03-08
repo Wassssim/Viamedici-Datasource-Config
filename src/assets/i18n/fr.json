@@ -1,0 +1,8 @@
+{
+    "common": {
+        "start message": "Bienvenue dans l'application Viamedici WebGrid. Les données sont en cours de chargement."
+	},
+	 "webGrid": {
+        "view title": " Viamedici Web-Grid"
+	 }		
+}	

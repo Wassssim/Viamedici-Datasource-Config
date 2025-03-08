@@ -1,0 +1,94 @@
+<div class="container">
+  <h2>Elasticsearch Document Editor</h2>
+
+  <!-- Select Index -->
+  <div *ngIf="indices.length">
+    <label>Select Index:</label>
+    <select
+      [(ngModel)]="selectedIndex"
+      (change)="loadDocuments()"
+      class="form-control"
+    >
+      <option *ngFor="let index of indices" [value]="index">{{ index }}</option>
+    </select>
+  </div>
+
+  <button
+    class="btn btn-primary my-3"
+    (click)="openModal()"
+    *ngIf="selectedIndex"
+  >
+    Add New Document
+  </button>
+
+  <app-add-document-modal
+    (documentAdded)="onDocumentAdded($event)"
+  ></app-add-document-modal>
+
+  <!-- Documents Table -->
+  <div class="documents">
+    <h3 *ngIf="documents.length">Documents in {{ selectedIndex }}</h3>
+    <table class="table table-striped" *ngIf="documents.length">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Data</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let doc of documents">
+          <td>{{ doc.id }}</td>
+          <td>
+            <!-- Show JSON when not editing -->
+            <pre *ngIf="editingDocumentId !== doc.id">{{ doc | json }}</pre>
+
+            <!-- Show input fields when editing -->
+            <div *ngIf="editingDocumentId === doc.id">
+              <textarea
+                class="form-control"
+                [(ngModel)]="jsonString"
+                (ngModelChange)="updateEditedDocument()"
+              >
+              </textarea>
+            </div>
+          </td>
+          <td class="action-cell">
+            <!-- Show Edit button if not editing -->
+            <button
+              *ngIf="editingDocumentId !== doc.id"
+              class="btn btn-primary btn-sm"
+              (click)="editDocument(doc)"
+            >
+              Edit
+            </button>
+
+            <!-- Show Save and Cancel buttons when editing -->
+            <button
+              *ngIf="editingDocumentId === doc.id"
+              class="btn btn-success btn-sm"
+              (click)="saveDocument()"
+            >
+              Save
+            </button>
+            <button
+              *ngIf="editingDocumentId === doc.id"
+              class="btn btn-secondary btn-sm"
+              (click)="cancelEdit()"
+            >
+              Cancel
+            </button>
+
+            <!-- Delete button -->
+            <button
+              class="btn btn-danger btn-sm"
+              (click)="deleteDocument(doc.id)"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

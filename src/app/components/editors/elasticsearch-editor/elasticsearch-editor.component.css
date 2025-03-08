@@ -1,0 +1,16 @@
+.documents {
+  margin-top: 10px;
+}
+
+.action-cell {
+  position: relative;
+  width: fit-content;
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}

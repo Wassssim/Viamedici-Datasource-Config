@@ -1,0 +1,24 @@
+<div id="addDocumentModal" class="modal" style="display: none">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Document</h5>
+        <button type="button" class="close" (click)="closeModal()">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <json-editor
+          [options]="editorOptions"
+          [data]="jsonData"
+          (change)="onJsonChange($event)"
+        >
+        </json-editor>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveDocument()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>

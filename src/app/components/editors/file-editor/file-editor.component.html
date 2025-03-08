@@ -1,0 +1,7 @@
+<div class="container file-editor">
+  <app-key-value-editor
+    *ngIf="parsedData"
+    [data]="parsedData"
+    (fileUpdated)="updateFile($event)"
+  ></app-key-value-editor>
+</div>

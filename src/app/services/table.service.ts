@@ -18,10 +18,8 @@ export class TableService {
     return this.http.get<any>(`${this.apiUrl}/tables?source=${source}`);
   }
 
-  getTableStructure(table: string, source: DataSource) {
-    return this.http.get<any>(
-      `${this.apiUrl}/tables/${table}/structure/?source=${source}`
-    );
+  getTableStructure(table: string) {
+    return this.http.get<any>(`${this.apiUrl}/tables/${table}/structure`);
   }
 
   // Get rows for a specific table
@@ -62,5 +60,35 @@ export class TableService {
   // Delete a row from the table
   deleteRow(table: string, rowId: number) {
     return this.http.delete(`${this.apiUrl}/tables/${table}/rows/${rowId}`);
+  }
+
+  // Preprocess row data based on column types before sending it to the backend
+  preprocessRowData(row: Record<string, any>, columns: any[]) {
+    const transformedData = {};
+
+    Object.keys(row).forEach((key) => {
+      const value = row[key];
+      if (!value || value === '') return;
+
+      const columnType = columns.find((col) => col.name === key)?.type;
+
+      switch (columnType) {
+        case 'number':
+          transformedData[key] = parseFloat(value);
+          break;
+        case 'boolean':
+          transformedData[key] = value === true || value === 'true'; // Convert checkbox to boolean
+          break;
+        case 'datetime':
+        case 'date':
+          transformedData[key] = new Date(value).toISOString(); // Convert datetime-local to ISO string
+          break;
+        case 'string':
+        default:
+          transformedData[key] = value.toString(); // Ensure it's a string
+      }
+    });
+
+    return transformedData;
   }
 }

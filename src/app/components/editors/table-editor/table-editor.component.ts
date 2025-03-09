@@ -27,6 +27,7 @@ export class TableEditorComponent implements OnInit, OnChanges {
   editMode: { [key: number]: boolean } = {}; // Tracks edited rows
   errorMessage: string = '';
   showModal = false;
+  loading: boolean = false;
 
   constructor(private tableService: TableService, private fb: FormBuilder) {}
 
@@ -48,19 +49,23 @@ export class TableEditorComponent implements OnInit, OnChanges {
   }
 
   fetchTableStructure() {
-    this.tableService.getTableStructure(this.tableName, this.source).subscribe(
+    this.loading = true; // Start loading
+    this.tableService.getTableStructure(this.tableName).subscribe(
       (data) => {
         this.columns = data.columns;
-        this.createForm();
+        this.loading = false; // Stop loading
       },
       (error) => {
         console.error('Error fetching table structure:', error);
         this.errorMessage = 'Failed to load table structure.';
+        this.loading = false; // Stop loading
       }
     );
   }
 
   search() {
+    if (this.errorMessage) this.errorMessage = null;
+
     if (
       !this.selectedColumn ||
       !this.searchString ||
@@ -87,43 +92,38 @@ export class TableEditorComponent implements OnInit, OnChanges {
   }
 
   fetchRows(options?: GetRowsOptions) {
+    this.loading = true; // Start loading
     this.tableService.getRows(this.tableName, options).subscribe(
       (data) => {
         this.rows = data.rows;
+        this.loading = false; // Stop loading
       },
       (error) => {
         console.error('Error fetching rows:', error);
         this.errorMessage = 'Failed to load rows.';
+        this.loading = false; // Stop loading
       }
     );
   }
 
-  createForm() {
-    let formControls = {};
-    this.columns.forEach((col) => {
-      formControls[col.name] = [
-        col.default || '',
-        col.required ? Validators.required : [],
-      ];
-    });
-    this.form = this.fb.group(formControls);
-  }
-
-  addRow() {
-    if (this.form.invalid) {
+  addRow(form) {
+    if (form.invalid) {
       this.errorMessage = 'Please fill in all required fields.';
       return;
     }
 
-    const newRow = { ...this.form.value };
+    const newRow = this.tableService.preprocessRowData(
+      form.value,
+      this.columns
+    );
     this.rows.push(newRow); // **Optimistic UI Update**
-    this.form.reset(); // Reset form after adding
 
     this.tableService.insertRow(this.tableName, newRow).subscribe(
       (savedRow) => {
         const index = this.rows.indexOf(newRow);
         this.rows[index] = savedRow; // Replace temp row with actual response
         this.closeModal();
+        form.reset(); // Reset form after adding
       },
       (error) => {
         console.error('Error adding row:', error);
@@ -173,6 +173,8 @@ export class TableEditorComponent implements OnInit, OnChanges {
   }
 
   onColumnSelect(column: string) {
+    if (this.errorMessage) this.errorMessage = null;
+    if (this.selectedColumn !== column && column === 'All') this.fetchRows();
     this.selectedColumn = column;
   }
 

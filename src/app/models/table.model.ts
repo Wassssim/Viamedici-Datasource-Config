@@ -11,3 +11,8 @@ export interface GetRowsOptions {
   orderBy?: string;
   orderDirection?: 'ASC' | 'DESC';
 }
+
+export interface Column {
+  name: string;
+  type: 'number' | 'boolean' | 'datetime' | 'date' | 'string';
+}

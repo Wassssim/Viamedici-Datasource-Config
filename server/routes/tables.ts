@@ -44,15 +44,7 @@ tableRoutes.get('/:table/structure', async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = $1`,
-      [tableName]
-    );
-
-    const columns = result.rows.map((row) => ({
-      name: row.column_name,
-      type: mapType(row.data_type, sourceType),
-    }));
+    const columns = await postgresService.getTableStructure(tableName);
 
     res.json({ columns });
   } catch (err) {
@@ -112,6 +104,21 @@ tableRoutes.get('/:table/rows', async (req, res) => {
   } catch (err) {
     console.error('Error fetching rows:', err);
     res.status(500).json({ error: 'Database query failed' });
+  }
+});
+
+// Knex insert
+tableRoutes.post('/:table/rows', async (req, res) => {
+  const { table } = req.params;
+  const row = req.body; // Assume that this is already transformed with the correct types
+
+  try {
+    const insertedRow = await postgresService.insertRow(table, row);
+    res.json(insertedRow);
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send('Error adding row: ' + err.message);
   }
 });
 

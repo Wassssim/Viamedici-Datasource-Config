@@ -25,6 +25,7 @@ import { ElasticsearchEditorComponent } from './components/editors/elasticsearch
 import { AddDocumentModalComponent } from './components/editors/elasticsearch-editor/add-document-modal/add-document-modal.component';
 import { NgJsonEditorModule } from 'ang-jsoneditor';
 import { DropdownComponent } from './components/ui/dropdown/dropdown.component';
+import { AddRowModalComponent } from './components/editors/table-editor/add-row-modal/add-row-modal.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -46,6 +47,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     ElasticsearchEditorComponent,
     AddDocumentModalComponent,
     DropdownComponent,
+    AddRowModalComponent,
   ],
   imports: [
     BrowserModule,

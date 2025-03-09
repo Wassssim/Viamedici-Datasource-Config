@@ -10,12 +10,14 @@ const postgresSqlTypeMap: Record<string, string> = {
   boolean: 'boolean',
   text: 'string',
   varchar: 'string',
+  'character varying': 'string',
   char: 'string',
   timestamp: 'datetime',
   'timestamp without time zone': 'datetime',
   date: 'date',
   float: 'number',
   decimal: 'number',
+  jsonb: 'json',
 };
 
 const mssqlTypeMAp = {

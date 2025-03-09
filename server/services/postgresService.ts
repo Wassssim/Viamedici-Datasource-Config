@@ -1,6 +1,7 @@
 import knex from 'knex';
 import { getConfig } from './configService';
-import { PostgresConfig } from '../types/data-source-config';
+import { DataSource, PostgresConfig } from '../types/data-source-config';
+import { mapType } from '../types/type-mapper';
 
 const config = getConfig();
 
@@ -21,6 +22,21 @@ interface GetRowsOptions {
   offset?: number;
   orderBy?: { column: string; direction?: 'ASC' | 'DESC' };
 }
+
+const getTableStructure = async (table: string) => {
+  const result = await db('information_schema.columns')
+    .select('column_name', 'data_type', 'is_nullable', 'column_default')
+    .where('table_name', table);
+
+  const columns = result.map((row) => ({
+    name: row.column_name,
+    type: mapType(row.data_type, DataSource.Postgres),
+    isNullable: row.is_nullable,
+    default: row.column_default,
+  }));
+
+  return columns;
+};
 
 const getRows = async (table: string, options: GetRowsOptions = {}) => {
   try {
@@ -64,4 +80,10 @@ const getRows = async (table: string, options: GetRowsOptions = {}) => {
   }
 };
 
-export { getRows };
+const insertRow = async (table: string, row: any) => {
+  console.log(row);
+
+  return await db(table).insert(row).returning('*');
+};
+
+export { getTableStructure, getRows, insertRow };

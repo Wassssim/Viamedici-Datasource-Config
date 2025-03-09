@@ -43,13 +43,11 @@ router.put('/:index/:id', async (req, res) => {
     const { index, id } = req.params;
 
     const updatedData = req.body;
-    console.log(req.body);
     const response = await elasticsearchService.updateDocument(
       index,
       id,
       updatedData
     );
-    console.log(response);
 
     res.json(response);
   } catch (error) {

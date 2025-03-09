@@ -1,0 +1,8 @@
+.ng-select-form-control {
+  padding: unset;
+  border: unset;
+}
+
+.ng-select-form-control.is-invalid > .ng-input {
+  border-color: red;
+}

@@ -5,15 +5,20 @@ import {
   Output,
   OnChanges,
   SimpleChanges,
+  OnInit,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { FilterCondition } from 'src/app/models/table.model';
+import { TableService } from 'src/app/services/table.service';
+import { distinctUntilChanged, debounceTime, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-add-row-modal',
   templateUrl: './add-row-modal.component.html',
   styleUrls: ['./add-row-modal.component.css'],
 })
-export class AddRowModalComponent implements OnChanges {
+export class AddRowModalComponent implements OnInit, OnChanges {
   @Input() showModal = false;
   @Input() editMode = false;
   @Input() selectedItem: any = null;
@@ -24,7 +29,18 @@ export class AddRowModalComponent implements OnChanges {
   submitted = false;
   form: FormGroup = this.fb.group({});
 
-  constructor(private fb: FormBuilder) {}
+  /* Foreign Key */
+  foreignKeyData: { [key: string]: any[] } = {}; // Store dropdown data
+  searchTerms: { [key: string]: string } = {}; // Store search text
+  offsets: { [key: string]: number } = {}; // Track pagination offsets
+  loading: { [key: string]: boolean } = {}; // Prevent multiple calls
+  search$ = new Subject<{ term: any; columnName: string }>();
+
+  constructor(private tableService: TableService, private fb: FormBuilder) {}
+
+  ngOnInit() {
+    this.createForm();
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.columns && this.columns.length) {

@@ -1,0 +1,15 @@
+<ng-select
+  class="form-control ng-select-form-control"
+  [items]="foreignKeyData"
+  [typeahead]="search$"
+  [loading]="loading"
+  (scrollToEnd)="onScroll()"
+  (search)="onSearch($event)"
+  (change)="onSelect($event)"
+  [ngClass]="{
+    'is-invalid': isInvalid
+  }"
+  [virtualScroll]="true"
+  placeholder="Select a value"
+>
+</ng-select>

@@ -26,6 +26,8 @@ import { AddDocumentModalComponent } from './components/editors/elasticsearch-ed
 import { NgJsonEditorModule } from 'ang-jsoneditor';
 import { DropdownComponent } from './components/ui/dropdown/dropdown.component';
 import { AddRowModalComponent } from './components/editors/table-editor/add-row-modal/add-row-modal.component';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { ForeignKeySelectComponent } from './components/editors/table-editor/foreign-key-select/foreign-key-select.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -48,6 +50,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     AddDocumentModalComponent,
     DropdownComponent,
     AddRowModalComponent,
+    ForeignKeySelectComponent,
   ],
   imports: [
     BrowserModule,
@@ -59,6 +62,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     FontAwesomeModule,
     ReactiveFormsModule,
     NgJsonEditorModule,
+    NgSelectModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

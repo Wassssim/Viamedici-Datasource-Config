@@ -42,8 +42,6 @@ export class TableService {
       params = params.set('orderDirection', options.orderDirection || 'ASC');
     }
 
-    console.log(params);
-
     return this.http.get<any>(`${this.apiUrl}/tables/${table}/rows`, {
       params,
     });

@@ -16,7 +16,20 @@
               <span *ngIf="!column.default" class="text-danger">*</span>
             </label>
 
-            <ng-container [ngSwitch]="column.type">
+            <app-foreign-key-select
+              *ngIf="column.constraints.foreignKey"
+              [column]="column"
+              [isInvalid]="
+                form.controls[column.name].invalid &&
+                (form.controls[column.name].touched || submitted)
+              "
+              (valueChange)="form.controls[column.name].setValue($event)"
+            ></app-foreign-key-select>
+
+            <ng-container
+              [ngSwitch]="column.type"
+              *ngIf="!column.constraints.foreignKey"
+            >
               <input
                 *ngSwitchCase="'number'"
                 type="number"

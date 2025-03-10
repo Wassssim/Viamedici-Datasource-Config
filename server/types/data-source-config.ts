@@ -5,12 +5,15 @@ export enum DataSource {
   Elasticsearch = 'Elasticsearch',
 }
 
+type Table = { pattern: string };
+
 export interface MSSLConfig {
   host: string;
   port: number;
   user: string;
   password: string;
   database: string;
+  tables: Table[];
 }
 
 export interface PostgresConfig {
@@ -19,6 +22,7 @@ export interface PostgresConfig {
   user: string;
   password: string;
   database: string;
+  tables: Table[];
 }
 
 export interface ElasticsearchConfig {

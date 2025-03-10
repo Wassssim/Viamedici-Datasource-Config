@@ -1,9 +1,12 @@
 import {
+  AfterViewInit,
   Component,
+  ElementRef,
   Input,
   OnChanges,
   OnInit,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableService } from '../../../services/table.service';
@@ -15,12 +18,13 @@ import { GetRowsOptions } from 'src/app/models/table.model';
   templateUrl: './table-editor.component.html',
   styleUrls: ['./table-editor.component.css'],
 })
-export class TableEditorComponent implements OnInit, OnChanges {
-  @Input() tableName: string;
-  @Input() source: DataSource;
+export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
+  @Input() tableName?: string;
+  @Input() source?: DataSource;
+  @ViewChild('sentinel') sentinel: ElementRef;
 
   columns: any[] = [];
-  searchString: string = null;
+  searchString: string = '';
   selectedColumn: string | null = null;
   rows: any[] = [];
   form: FormGroup;
@@ -28,6 +32,12 @@ export class TableEditorComponent implements OnInit, OnChanges {
   errorMessage: string = '';
   showModal = false;
   loading: boolean = false;
+
+  loadingMore = false;
+  page = 1;
+  pageSize = 15;
+
+  private observer!: IntersectionObserver;
 
   constructor(private tableService: TableService, private fb: FormBuilder) {}
 
@@ -43,70 +53,94 @@ export class TableEditorComponent implements OnInit, OnChanges {
     }
   }
 
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
+  }
+
+  setupIntersectionObserver() {
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+
+        if (target.isIntersecting && !this.loadingMore) {
+          this.loadMoreRows();
+        }
+      },
+      {
+        root: null, // Observes viewport
+        rootMargin: '0px',
+        threshold: 0.5, // Trigger when fully in view
+      }
+    );
+
+    if (this.sentinel) {
+      this.observer.observe(this.sentinel.nativeElement);
+    }
+  }
+
   loadTableData() {
     this.fetchTableStructure();
-    this.fetchRows();
+    this.fetchRows({
+      limit: this.pageSize,
+    });
   }
 
   fetchTableStructure() {
-    this.loading = true; // Start loading
-    this.tableService.getTableStructure(this.tableName).subscribe(
+    this.loading = true;
+    this.tableService.getTableStructure(this.tableName!).subscribe(
       (data) => {
         this.columns = data.columns;
-        this.loading = false; // Stop loading
+        this.loading = false;
       },
       (error) => {
         console.error('Error fetching table structure:', error);
         this.errorMessage = 'Failed to load table structure.';
-        this.loading = false; // Stop loading
+        this.loading = false;
       }
     );
   }
 
   search() {
-    if (this.errorMessage) this.errorMessage = null;
+    this.errorMessage = '';
 
-    if (
-      !this.selectedColumn ||
-      !this.searchString ||
-      this.searchString.length === 0
-    )
+    if (!this.selectedColumn || this.searchString.trim() === '') {
       return;
+    }
 
     if (this.selectedColumn === 'All') {
       this.fetchRows();
       return;
     }
 
-    const options = {
+    const options: GetRowsOptions = {
       filterBy: [
         {
           column: this.selectedColumn,
           operator: 'LIKE',
-          value: '%' + this.searchString + '%',
+          value: `%${this.searchString}%`,
         },
       ],
-    } as GetRowsOptions;
+    };
 
     this.fetchRows(options);
   }
 
   fetchRows(options?: GetRowsOptions) {
-    this.loading = true; // Start loading
-    this.tableService.getRows(this.tableName, options).subscribe(
+    this.loading = true;
+    this.tableService.getRows(this.tableName!, options).subscribe(
       (data) => {
         this.rows = data.rows;
-        this.loading = false; // Stop loading
+        this.loading = false;
       },
       (error) => {
         console.error('Error fetching rows:', error);
         this.errorMessage = 'Failed to load rows.';
-        this.loading = false; // Stop loading
+        this.loading = false;
       }
     );
   }
 
-  addRow(form) {
+  addRow(form: FormGroup) {
     if (form.invalid) {
       this.errorMessage = 'Please fill in all required fields.';
       return;
@@ -116,18 +150,24 @@ export class TableEditorComponent implements OnInit, OnChanges {
       form.value,
       this.columns
     );
-    this.rows.push(newRow); // **Optimistic UI Update**
 
-    this.tableService.insertRow(this.tableName, newRow).subscribe(
+    const tempId = `temp_${Date.now()}`;
+    const tempRow = { ...newRow, id: tempId };
+
+    this.rows.push(tempRow);
+
+    this.tableService.insertRow(this.tableName!, newRow).subscribe(
       (savedRow) => {
-        const index = this.rows.indexOf(newRow);
-        this.rows[index] = savedRow; // Replace temp row with actual response
+        const index = this.rows.findIndex((r) => r.id === tempId);
+        if (index !== -1) {
+          this.rows[index] = savedRow;
+        }
         this.closeModal();
-        form.reset(); // Reset form after adding
+        form.reset();
       },
       (error) => {
         console.error('Error adding row:', error);
-        this.rows.pop(); // Revert optimistic update on failure
+        this.rows = this.rows.filter((r) => r.id !== tempId);
         this.errorMessage = 'Failed to add row.';
       }
     );
@@ -138,7 +178,7 @@ export class TableEditorComponent implements OnInit, OnChanges {
   }
 
   saveRow(row: any, rowIndex: number) {
-    this.tableService.updateRow(this.tableName, row).subscribe(
+    this.tableService.updateRow(this.tableName!, row).subscribe(
       () => {
         this.editMode[rowIndex] = false;
       },
@@ -150,15 +190,15 @@ export class TableEditorComponent implements OnInit, OnChanges {
   }
 
   deleteRow(rowId: number, rowIndex: number) {
-    const deletedRow = this.rows.splice(rowIndex, 1)[0]; // **Optimistic UI Update**
+    const deletedRow = this.rows.splice(rowIndex, 1)[0];
 
-    this.tableService.deleteRow(this.tableName, rowId).subscribe(
+    this.tableService.deleteRow(this.tableName!, rowId).subscribe(
       () => {
         // Successfully deleted
       },
       (error) => {
         console.error('Error deleting row:', error);
-        this.rows.splice(rowIndex, 0, deletedRow); // Revert deletion on failure
+        this.rows.splice(rowIndex, 0, deletedRow);
         this.errorMessage = 'Failed to delete row.';
       }
     );
@@ -173,17 +213,49 @@ export class TableEditorComponent implements OnInit, OnChanges {
   }
 
   onColumnSelect(column: string) {
-    if (this.errorMessage) this.errorMessage = null;
-    if (this.selectedColumn !== column && column === 'All') this.fetchRows();
+    this.errorMessage = '';
+    if (this.selectedColumn !== column && column === 'All') {
+      this.fetchRows();
+    }
     this.selectedColumn = column;
   }
 
-  // Create a computed property to transform the array
   get columnNames(): string[] {
-    return ['All'].concat(this.columns.map((col) => col.name));
+    return ['All', ...this.columns.map((col) => col.name)];
   }
 
-  displayColumnDropdownLabel(selectedItemLabel) {
-    return 'Column: ' + selectedItemLabel;
+  displayColumnDropdownLabel(selectedItemLabel: string): string {
+    return `Column: ${selectedItemLabel}`;
+  }
+
+  onTableScroll(event: Event) {
+    const target = event.target as HTMLElement;
+    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) {
+      this.loadMoreRows();
+    }
+  }
+
+  loadMoreRows() {
+    if (this.loadingMore) return;
+
+    this.loadingMore = true;
+    const options: GetRowsOptions = {
+      offset: this.page * this.pageSize,
+      limit: this.pageSize,
+    };
+
+    this.tableService.getRows(this.tableName!, options).subscribe(
+      (data) => {
+        if (data.rows.length > 0) {
+          this.rows = [...this.rows, ...data.rows];
+          this.page++;
+        }
+        this.loadingMore = false;
+      },
+      (error) => {
+        console.error('Error fetching more rows:', error);
+        this.loadingMore = false;
+      }
+    );
   }
 }

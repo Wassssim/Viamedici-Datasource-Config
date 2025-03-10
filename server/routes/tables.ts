@@ -21,7 +21,10 @@ tableRoutes.get('/', async (req, res) => {
     const result = await pool.query(
       "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
     );
-    const tables = result.rows.map((row) => row.table_name);
+    const tables = result.rows
+      .map((row) => row.table_name)
+      .filter((table) => postgresService.isTableAccessible(table));
+
     res.json({ tables });
   } catch (err) {
     res.status(500).json({ error: err.message });

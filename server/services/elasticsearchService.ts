@@ -1,15 +1,31 @@
+import { ElasticsearchConfig } from '../types/data-source-config';
+import { getConfig } from './configService';
+
 const { Client } = require('@elastic/elasticsearch');
 
-const ELASTICSEARCH_HOST = process.env.ELASTICSEARCH_HOST || 'http://localhost';
-const ELASTICSEARCH_PORT = process.env.ELASTICSEARCH_PORT || 9200;
+const config = getConfig();
+const selectedConfig = config.sourcesConfig[
+  config.selectedSource
+] as ElasticsearchConfig;
 
 const esClient = new Client({
-  node: `${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}`,
+  node: `${selectedConfig.protocol}://${selectedConfig.host}:${selectedConfig.port}`,
 });
 
 const getIndices = async () => {
   const { body } = await esClient.cat.indices({ format: 'json' });
   return body.map((index) => index.index);
+};
+
+const getIndexSchema = async (index) => {
+  try {
+    const { body } = await esClient.indices.getMapping({ index });
+
+    return body[index].mappings.properties;
+  } catch (error) {
+    console.error(`Error fetching schema for index "${index}":`, error);
+    throw error;
+  }
 };
 
 const getDocuments = async (
@@ -36,7 +52,7 @@ const getDocuments = async (
         : { match_all: {} }, // If no searchString, return all docs
     },
   });
-  return body.hits.hits.map((doc) => ({ id: doc._id, ...doc._source }));
+  return body.hits.hits.map((doc) => ({ _id: doc._id, ...doc._source }));
 };
 
 const addDocument = async (index, document) => {
@@ -67,10 +83,18 @@ const deleteDocument = async (index, id) => {
   return body;
 };
 
+const isIndexAccessible = (index: string) =>
+  selectedConfig.indices.some((pattern) => {
+    const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`, 'i');
+    return regex.test(index);
+  });
+
 module.exports = {
   getIndices,
+  getIndexSchema,
   getDocuments,
   addDocument,
   updateDocument,
   deleteDocument,
+  isIndexAccessible,
 };

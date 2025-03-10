@@ -6,6 +6,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { DocumentsService } from '../../../services/documents.service';
+import { response } from 'express';
 
 @Component({
   selector: 'app-elasticsearch-editor',
@@ -25,6 +26,7 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
   loading: boolean = true;
   loadingDocuments: boolean = false;
   searchString = undefined;
+  indexSchema = {};
 
   page = 1;
   pageSize = 15;
@@ -84,6 +86,13 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
         this.loading = false;
       }
     );
+  }
+
+  handleIndexListChange() {
+    this.documentsService
+      .getSchema(this.selectedIndex)
+      .subscribe((response) => (this.indexSchema = response));
+    this.loadDocuments();
   }
 
   loadDocuments(reset = true) {

@@ -19,6 +19,11 @@
       ]
     },
     "MSSQL": null,
-    "Elasticsearch": null
+    "Elasticsearch": {
+      "protocol": "http",
+      "host": "localhost",
+      "port": 9200,
+      "indices": ["*index*"]
+    }
   }
 }

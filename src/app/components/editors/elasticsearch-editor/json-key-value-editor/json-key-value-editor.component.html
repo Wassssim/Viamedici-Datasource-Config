@@ -1,0 +1,61 @@
+<div class="json-editor">
+  <div *ngFor="let item of data | keyvalue">
+    <div class="key-value-pair">
+      <input
+        type="text"
+        [value]="item.key"
+        (change)="onKeyChange(item.key, $event.target.value)"
+        class="json-key"
+        disabled
+      />
+
+      <ng-container *ngIf="isObject(data[item.key]); else primitiveValue">
+        <button class="expand-btn" (click)="toggleExpand(item.key)">
+          {{ expandedKeys.has(item.key) ? "▼" : "▶" }}
+        </button>
+      </ng-container>
+
+      <button class="remove-btn" (click)="removeKey(item.key)">❌</button>
+    </div>
+
+    <div
+      *ngIf="isObject(data[item.key]) && expandedKeys.has(item.key)"
+      class="nested-object"
+    >
+      <app-json-key-value-editor
+        [schema]="schema[item.key]"
+        [data]="data[item.key]"
+        (dataChange)="onValueChange(item.key, $event)"
+      ></app-json-key-value-editor>
+    </div>
+
+    <ng-template #primitiveValue>
+      <ng-container *ngIf="isString(data[item.key])">
+        <input
+          type="text"
+          [value]="data[item.key]"
+          (change)="onValueChange(item.key, $event.target.value)"
+          class="json-value"
+        />
+      </ng-container>
+
+      <ng-container *ngIf="isNumber(data[item.key])">
+        <input
+          type="number"
+          [value]="data[item.key]"
+          (change)="onValueChange(item.key, $event.target.value)"
+          class="json-value"
+        />
+      </ng-container>
+
+      <ng-container *ngIf="isBoolean(data[item.key])">
+        <input
+          type="checkbox"
+          [checked]="data[item.key]"
+          (change)="onValueChange(item.key, $event.target.checked)"
+          class="json-value"
+        />
+      </ng-container>
+    </ng-template>
+  </div>
+</div>

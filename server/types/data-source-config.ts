@@ -26,8 +26,10 @@ export interface PostgresConfig {
 }
 
 export interface ElasticsearchConfig {
+  protocol: string;
   host: string;
   port: number;
+  indices: string[];
 }
 
 export interface FileConfig {

@@ -15,6 +15,10 @@ export class DocumentsService {
     return this.http.get<string[]>(`${this.apiUrl}/documents/indices`);
   }
 
+  getSchema(index: string): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/documents/${index}/schema`);
+  }
+
   // Fetch documents from a specific index
   getDocuments(
     index: string,

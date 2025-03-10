@@ -28,6 +28,7 @@ import { DropdownComponent } from './components/ui/dropdown/dropdown.component';
 import { AddRowModalComponent } from './components/editors/table-editor/add-row-modal/add-row-modal.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ForeignKeySelectComponent } from './components/editors/table-editor/foreign-key-select/foreign-key-select.component';
+import { JsonKeyValueEditorComponent } from './components/editors/elasticsearch-editor/json-key-value-editor/json-key-value-editor.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -51,6 +52,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     DropdownComponent,
     AddRowModalComponent,
     ForeignKeySelectComponent,
+    JsonKeyValueEditorComponent,
   ],
   imports: [
     BrowserModule,

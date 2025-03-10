@@ -1,0 +1,30 @@
+.json-editor {
+  margin-left: 10px;
+  border-left: 2px solid #ddd;
+  padding-left: 10px;
+}
+
+.key-value-pair {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.json-key {
+  width: 100px;
+  font-weight: bold;
+}
+
+.json-value {
+  flex-grow: 1;
+}
+
+.expand-btn,
+.remove-btn,
+.add-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+}

@@ -8,12 +8,10 @@
         </button>
       </div>
       <div class="modal-body">
-        <json-editor
-          [options]="editorOptions"
-          [data]="jsonData"
-          (change)="onJsonChange($event)"
-        >
-        </json-editor>
+        <app-json-key-value-editor
+          [schema]="schema"
+          (dataChange)="jsonData = $event"
+        ></app-json-key-value-editor>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>

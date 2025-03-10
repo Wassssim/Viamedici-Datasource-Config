@@ -1,6 +1,10 @@
 <div class="container">
   <h2>Elasticsearch Document Editor</h2>
 
+  <div *ngIf="indices.length === 0 && !loading">
+    <h5>No indices</h5>
+  </div>
+
   <div *ngIf="errorMessage && !loading" class="alert alert-danger">
     {{ errorMessage }}
   </div>
@@ -16,7 +20,7 @@
     <label>Select Index:</label>
     <select
       [(ngModel)]="selectedIndex"
-      (change)="loadDocuments()"
+      (change)="handleIndexListChange()"
       class="form-control"
     >
       <option *ngFor="let index of indices" [value]="index">{{ index }}</option>
@@ -52,6 +56,7 @@
   </button>
 
   <app-add-document-modal
+    [schema]="indexSchema"
     (documentAdded)="onDocumentAdded($event)"
   ></app-add-document-modal>
 
@@ -68,7 +73,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let doc of documents">
-          <td>{{ doc.id }}</td>
+          <td>{{ doc._id }}</td>
           <td>
             <!-- Show JSON when not editing -->
             <pre *ngIf="editingDocumentId !== doc.id">{{ doc | json }}</pre>

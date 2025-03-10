@@ -1,3 +1,4 @@
+import { convertElasticsearchSchema } from '../types/type-mapper';
 import logger from '../helpers/logger';
 
 const router = require('express').Router();
@@ -7,7 +8,20 @@ const elasticsearchService = require('../services/elasticsearchService');
 router.get('/indices', async (req, res) => {
   try {
     const indices = await elasticsearchService.getIndices();
-    res.json(indices);
+    const fileteredIndices = indices.filter((index) =>
+      elasticsearchService.isIndexAccessible(index)
+    );
+
+    res.json(fileteredIndices);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:index/schema', async (req, res) => {
+  try {
+    const schema = await elasticsearchService.getIndexSchema(req.params.index);
+    res.json(convertElasticsearchSchema(schema));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,5 +1,5 @@
 {
-  "selectedSource": "Postgres",
+  "selectedSource": "Elasticsearch",
   "sourcesConfig": {
     "File": {
       "filePath": "./samples/example.properties"

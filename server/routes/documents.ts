@@ -17,7 +17,13 @@ router.get('/indices', async (req, res) => {
 router.get('/:index', async (req, res) => {
   try {
     const { index } = req.params;
-    const documents = await elasticsearchService.getDocuments(index);
+    const { searchString, page, pageSize } = req.query;
+    const documents = await elasticsearchService.getDocuments(
+      index,
+      searchString,
+      page,
+      pageSize
+    );
     res.json(documents);
   } catch (error) {
     res.status(500).json({ error: error.message });

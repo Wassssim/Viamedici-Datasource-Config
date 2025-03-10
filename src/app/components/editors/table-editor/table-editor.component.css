@@ -79,3 +79,8 @@ thead th {
   gap: 10px;
   max-width: 150px;
 }
+
+.sentinel {
+  height: 10px;
+  width: 10px;
+}

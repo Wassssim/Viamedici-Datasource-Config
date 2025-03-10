@@ -8,7 +8,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 import { TableService } from '../../../services/table.service';
 import { DataSource } from '../../../models/datasource-config.model';
 import { GetRowsOptions } from 'src/app/models/table.model';
@@ -39,7 +39,7 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
   private observer!: IntersectionObserver;
 
-  constructor(private tableService: TableService, private fb: FormBuilder) {}
+  constructor(private tableService: TableService) {}
 
   ngOnInit() {
     if (this.tableName && this.source) {

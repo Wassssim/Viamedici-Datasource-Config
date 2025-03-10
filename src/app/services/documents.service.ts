@@ -16,8 +16,16 @@ export class DocumentsService {
   }
 
   // Fetch documents from a specific index
-  getDocuments(index: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/documents/${index}`);
+  getDocuments(
+    index: string,
+    searchString?: string,
+    page = 1,
+    pageSize = 10
+  ): Observable<any[]> {
+    const params = searchString ? { searchString } : {};
+    return this.http.get<any[]>(`${this.apiUrl}/documents/${index}`, {
+      params: { ...params, page, pageSize },
+    });
   }
 
   // Add a new document

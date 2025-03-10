@@ -1,6 +1,16 @@
 <div class="container">
   <h2>Elasticsearch Document Editor</h2>
 
+  <div *ngIf="errorMessage && !loading" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="loading" class="spinner-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
   <!-- Select Index -->
   <div *ngIf="indices.length">
     <label>Select Index:</label>
@@ -11,6 +21,26 @@
     >
       <option *ngFor="let index of indices" [value]="index">{{ index }}</option>
     </select>
+  </div>
+
+  <div class="input-group mb-3 search-input" *ngIf="selectedIndex">
+    <input
+      type="text"
+      [(ngModel)]="searchString"
+      class="form-control"
+      placeholder="Search Documents"
+      aria-label="Search"
+      aria-describedby="basic-addon2"
+    />
+    <div class="input-group-append">
+      <button
+        class="btn btn-outline-secondary"
+        type="button"
+        (click)="search()"
+      >
+        Search
+      </button>
+    </div>
   </div>
 
   <button
@@ -90,5 +120,11 @@
         </tr>
       </tbody>
     </table>
+    <div class="spinner-container" *ngIf="loadingDocuments">
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+    <div #sentinel class="sentinel"></div>
   </div>
 </div>

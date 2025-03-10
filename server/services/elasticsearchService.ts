@@ -12,11 +12,29 @@ const getIndices = async () => {
   return body.map((index) => index.index);
 };
 
-const getDocuments = async (index) => {
+const getDocuments = async (
+  index,
+  searchString?: string,
+  page = 1,
+  size = 10
+) => {
+  const from = (page - 1) * size; // Calculate offset
+
   const { body } = await esClient.search({
     index,
-    size: 10,
-    body: { query: { match_all: {} } },
+    from,
+    size,
+    body: {
+      query: searchString
+        ? {
+            query_string: {
+              query: `*${searchString}*`, // Wildcard search
+              fields: ['*'], // Search across all fields
+              default_operator: 'AND',
+            },
+          }
+        : { match_all: {} }, // If no searchString, return all docs
+    },
   });
   return body.hits.hits.map((doc) => ({ id: doc._id, ...doc._source }));
 };

@@ -7,7 +7,7 @@ export enum DataSource {
 
 type Table = { pattern: string };
 
-export interface MSSLConfig {
+export interface MSSQLConfig {
   host: string;
   port: number;
   user: string;
@@ -38,7 +38,7 @@ export interface FileConfig {
 
 type SourcesConfig = {
   [DataSource.File]: FileConfig;
-  [DataSource.MSSQL]: MSSLConfig;
+  [DataSource.MSSQL]: MSSQLConfig;
   [DataSource.Postgres]: PostgresConfig;
   [DataSource.Elasticsearch]: ElasticsearchConfig;
 };

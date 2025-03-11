@@ -75,3 +75,15 @@
 [2025-03-07T18:16:25.610] [ERROR] myApp - 
 [2025-03-08T13:32:33.403] [ERROR] myApp - 
 [2025-03-08T13:33:08.274] [ERROR] myApp - 
+[2025-03-11T02:40:50.735] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:41:04.300] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:41:34.342] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:41:37.253] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:42:22.892] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:42:24.849] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:42:35.892] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:44:15.554] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:44:19.693] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:44:56.936] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T02:47:12.060] [ERROR] myApp - Connection terminated unexpectedly
+[2025-03-11T03:06:22.300] [ERROR] myApp - Cannot read properties of undefined (reading 'map')

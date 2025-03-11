@@ -1,9 +1,14 @@
-<div class="container">
-  <h2>Table Editor - {{ tableName }}</h2>
+<app-table-list
+  [tables]="tables"
+  (selectEvent)="handleTableSelect($event)"
+></app-table-list>
 
-  <div *ngIf="errorMessage && !loading" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
+<div *ngIf="errorMessage && !loading" class="alert alert-danger">
+  {{ errorMessage }}
+</div>
+
+<div class="container" *ngIf="selectedTable">
+  <h2>Table Editor - {{ selectedTable }}</h2>
 
   <div class="input-group mb-3 search-input">
     <input
@@ -69,27 +74,22 @@
         <tbody>
           <tr *ngFor="let row of rows; let i = index">
             <td *ngFor="let column of columns">
-              <ng-container *ngIf="!editMode[i]; else editField">
-                {{ row[column.name] }}
-              </ng-container>
-              <ng-template #editField>
-                <input class="form-control" [(ngModel)]="row[column.name]" />
-              </ng-template>
+              {{ row[column.name] }}
+
+              <app-add-row-modal
+                *ngIf="editMode[i]"
+                [showModal]="showEditModal"
+                [editMode]="true"
+                [data]="row"
+                [columns]="columns"
+                (closeModalEvent)="closeEditModal(i)"
+                (saveItemEvent)="saveRow($event, i)"
+              >
+              </app-add-row-modal>
             </td>
             <td class="sticky-actions">
-              <button
-                *ngIf="!editMode[i]"
-                class="btn btn-warning btn-sm"
-                (click)="editRow(i)"
-              >
+              <button class="btn btn-warning btn-sm" (click)="editRow(i)">
                 Edit
-              </button>
-              <button
-                *ngIf="editMode[i]"
-                class="btn btn-success btn-sm"
-                (click)="saveRow(row, i)"
-              >
-                Save
               </button>
               <button
                 class="btn btn-danger btn-sm"
@@ -103,10 +103,11 @@
       </table>
     </div>
 
-    <div class="spinner-container" *ngIf="loadingMore">
+    <div class="spinner-container" *ngIf="loadingRows">
       <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
       </div>
+      {{ loadingRows }}
     </div>
   </div>
 

@@ -1,7 +1,8 @@
 <div class="app" *ngIf="config">
   <ng-container [ngSwitch]="selectedSource">
     <app-file-editor *ngSwitchCase="'File'"></app-file-editor>
-    <app-postgres-editor *ngSwitchCase="'Postgres'"></app-postgres-editor>
+    <app-table-editor *ngSwitchCase="'Postgres'"></app-table-editor>
+    <app-table-editor *ngSwitchCase="'MSSQL'"></app-table-editor>
     <app-elasticsearch-editor
       *ngSwitchCase="'Elasticsearch'"
     ></app-elasticsearch-editor>

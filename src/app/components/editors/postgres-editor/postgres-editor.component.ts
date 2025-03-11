@@ -18,15 +18,7 @@ export class PostgresEditorComponent implements OnInit {
   }
 
   loadTables(): void {
-    const config = {
-      host: '',
-      port: 0,
-      user: '',
-      password: '',
-      database: '',
-    };
-
-    this.tableService.getTables(DataSource.Postgres).subscribe((res) => {
+    this.tableService.getTables().subscribe((res) => {
       this.tables = res.tables;
     });
   }

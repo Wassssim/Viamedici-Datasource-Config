@@ -1,4 +1,4 @@
-import { ElasticsearchConfig } from '../types/data-source-config';
+import { DataSource, ElasticsearchConfig } from '../types/data-source-config';
 import { getConfig } from './configService';
 
 const { Client } = require('@elastic/elasticsearch');
@@ -8,9 +8,12 @@ const selectedConfig = config.sourcesConfig[
   config.selectedSource
 ] as ElasticsearchConfig;
 
-const esClient = new Client({
-  node: `${selectedConfig.protocol}://${selectedConfig.host}:${selectedConfig.port}`,
-});
+const esClient =
+  config.selectedSource === DataSource.Elasticsearch
+    ? new Client({
+        node: `${selectedConfig.protocol}://${selectedConfig.host}:${selectedConfig.port}`,
+      })
+    : null;
 
 const getIndices = async () => {
   const { body } = await esClient.cat.indices({ format: 'json' });

@@ -13,7 +13,11 @@
             <!-- Add a red star for required fields -->
             <label [for]="column.name">
               {{ column.name }}
-              <span *ngIf="!column.default" class="text-danger">*</span>
+              <span
+                *ngIf="!column.default && !column.isNullable"
+                class="text-danger"
+                >*</span
+              >
             </label>
 
             <app-foreign-key-select

@@ -9,9 +9,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { FilterCondition } from 'src/app/models/table.model';
 import { TableService } from 'src/app/services/table.service';
-import { distinctUntilChanged, debounceTime, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-add-row-modal',
@@ -22,6 +20,7 @@ export class AddRowModalComponent implements OnInit, OnChanges {
   @Input() showModal = false;
   @Input() editMode = false;
   @Input() selectedItem: any = null;
+  @Input() data = {};
   @Input() columns: any[] = []; // Receive columns from TableEditorComponent
   @Output() closeModalEvent = new EventEmitter<void>();
   @Output() saveItemEvent = new EventEmitter<any>();
@@ -36,7 +35,7 @@ export class AddRowModalComponent implements OnInit, OnChanges {
   loading: { [key: string]: boolean } = {}; // Prevent multiple calls
   search$ = new Subject<{ term: any; columnName: string }>();
 
-  constructor(private tableService: TableService, private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder) {}
 
   ngOnInit() {
     this.createForm();
@@ -44,6 +43,7 @@ export class AddRowModalComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.columns && this.columns.length) {
+      this.submitted = false;
       this.createForm();
     }
   }
@@ -57,7 +57,10 @@ export class AddRowModalComponent implements OnInit, OnChanges {
         // For the JSON type column, set a default value and disable the field
         formControls[col.name] = [{ value: '{}', disabled: true }];
       } else {
-        formControls[col.name] = ['', !col.default ? Validators.required : []];
+        formControls[col.name] = [
+          this.data[col.name] ?? '',
+          !col.default && !col.isNullable ? Validators.required : [],
+        ];
       }
     });
     this.form = this.fb.group(formControls);

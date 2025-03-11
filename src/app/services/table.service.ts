@@ -14,8 +14,8 @@ export class TableService {
 
   constructor(private http: HttpClient) {}
 
-  getTables(source: DataSource) {
-    return this.http.get<any>(`${this.apiUrl}/tables?source=${source}`);
+  getTables() {
+    return this.http.get<any>(`${this.apiUrl}/tables`);
   }
 
   getTableStructure(table: string) {
@@ -51,8 +51,8 @@ export class TableService {
     return this.http.post<any>(`${this.apiUrl}/tables/${table}/rows`, row);
   }
   // Update a row in the table
-  updateRow(table: string, row: any) {
-    return this.http.put(`${this.apiUrl}/tables/${table}/rows/${row.id}`, row);
+  updateRow(table: string, row: any, id: string) {
+    return this.http.put(`${this.apiUrl}/tables/${table}/rows/${id}`, row);
   }
 
   // Delete a row from the table

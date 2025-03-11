@@ -3,10 +3,4 @@
     [tables]="tables"
     (selectEvent)="handleTableSelect($event)"
   ></app-table-list>
-
-  <app-table-editor
-    *ngIf="selectedTable"
-    [tableName]="selectedTable"
-    [source]="'Postgres'"
-  ></app-table-editor>
 </div>

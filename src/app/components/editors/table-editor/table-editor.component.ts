@@ -19,9 +19,11 @@ import { GetRowsOptions } from 'src/app/models/table.model';
   styleUrls: ['./table-editor.component.css'],
 })
 export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
-  @Input() tableName?: string;
   @Input() source?: DataSource;
   @ViewChild('sentinel') sentinel: ElementRef;
+
+  tables: string[] = [];
+  selectedTable: string | null = null;
 
   columns: any[] = [];
   searchString: string = '';
@@ -31,24 +33,26 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   editMode: { [key: number]: boolean } = {}; // Tracks edited rows
   errorMessage: string = '';
   showModal = false;
+  showEditModal = false;
   loading: boolean = false;
+  editingRow: any;
 
-  loadingMore = false;
+  loadingRows = false;
   page = 1;
   pageSize = 15;
+  isLastPage = false;
 
   private observer!: IntersectionObserver;
 
   constructor(private tableService: TableService) {}
 
   ngOnInit() {
-    if (this.tableName && this.source) {
-      this.loadTableData();
-    }
+    this.loadTables();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['tableName'] && !changes['tableName'].firstChange) {
+      this.resetComponentState();
       this.loadTableData();
     }
   }
@@ -57,13 +61,42 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
     this.setupIntersectionObserver();
   }
 
+  loadTables(): void {
+    this.tableService.getTables().subscribe(
+      (res) => {
+        this.tables = res.tables;
+      },
+      (err) => (this.errorMessage = 'Error Loading Tables')
+    );
+  }
+
+  handleTableSelect(tableName: string) {
+    this.selectedTable = tableName;
+    if (this.selectedTable) {
+      this.loadTableData();
+    }
+  }
+
+  resetComponentState() {
+    // Clear any existing rows, columns, search string, and pagination state
+    this.rows = [];
+    this.columns = [];
+    this.searchString = '';
+    this.selectedColumn = null;
+    this.editMode = {};
+    this.errorMessage = '';
+    this.page = 1;
+    this.isLastPage = false;
+    this.loadingRows = false;
+  }
+
   setupIntersectionObserver() {
     this.observer = new IntersectionObserver(
       (entries) => {
         const target = entries[0];
 
-        if (target.isIntersecting && !this.loadingMore) {
-          this.loadMoreRows();
+        if (target.isIntersecting && !this.loadingRows) {
+          this.fetchRows({}, false);
         }
       },
       {
@@ -80,14 +113,12 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
   loadTableData() {
     this.fetchTableStructure();
-    this.fetchRows({
-      limit: this.pageSize,
-    });
+    this.fetchRows();
   }
 
   fetchTableStructure() {
     this.loading = true;
-    this.tableService.getTableStructure(this.tableName!).subscribe(
+    this.tableService.getTableStructure(this.selectedTable!).subscribe(
       (data) => {
         this.columns = data.columns;
         this.loading = false;
@@ -107,35 +138,58 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
       return;
     }
 
-    if (this.selectedColumn === 'All') {
-      this.fetchRows();
+    this.searchString = this.searchString.trim();
+
+    this.fetchRows({});
+  }
+
+  fetchRows(opt?: GetRowsOptions, reset = true) {
+    this.loadingRows = true;
+
+    const filterBy = [...(opt?.filterBy ?? [])];
+
+    if (this.selectedColumn && this.selectedColumn !== 'All') {
+      filterBy.push({
+        column: this.selectedColumn,
+        operator: 'LIKE',
+        value: `%${this.searchString}%`,
+      });
+    }
+
+    if (reset) {
+      this.page = 1;
+      this.isLastPage = false;
+    } else if (this.isLastPage) {
+      this.loadingRows = false;
       return;
     }
 
     const options: GetRowsOptions = {
-      filterBy: [
-        {
-          column: this.selectedColumn,
-          operator: 'LIKE',
-          value: `%${this.searchString}%`,
-        },
-      ],
+      ...opt,
+      offset: (this.page - 1) * this.pageSize,
+      limit: this.pageSize,
+      filterBy,
     };
 
-    this.fetchRows(options);
-  }
-
-  fetchRows(options?: GetRowsOptions) {
-    this.loading = true;
-    this.tableService.getRows(this.tableName!, options).subscribe(
+    this.tableService.getRows(this.selectedTable!, options).subscribe(
       (data) => {
-        this.rows = data.rows;
-        this.loading = false;
+        if (reset) {
+          this.rows = data.rows;
+        } else {
+          this.rows = [...this.rows, ...data.rows];
+        }
+        if (data.rows.length > 0) {
+          this.page++;
+        } else {
+          this.isLastPage = true;
+        }
+
+        this.loadingRows = false;
       },
       (error) => {
         console.error('Error fetching rows:', error);
         this.errorMessage = 'Failed to load rows.';
-        this.loading = false;
+        this.loadingRows = false;
       }
     );
   }
@@ -156,7 +210,7 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
     this.rows.push(tempRow);
 
-    this.tableService.insertRow(this.tableName!, newRow).subscribe(
+    this.tableService.insertRow(this.selectedTable!, newRow).subscribe(
       (savedRow) => {
         const index = this.rows.findIndex((r) => r.id === tempId);
         if (index !== -1) {
@@ -175,24 +229,32 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
   editRow(rowIndex: number) {
     this.editMode[rowIndex] = true;
+    this.showEditModal = true;
   }
 
-  saveRow(row: any, rowIndex: number) {
-    this.tableService.updateRow(this.tableName!, row).subscribe(
-      () => {
-        this.editMode[rowIndex] = false;
-      },
-      (error) => {
-        console.error('Error updating row:', error);
-        this.errorMessage = 'Failed to update row.';
-      }
-    );
+  saveRow(form: FormGroup, rowIndex: number) {
+    const row = this.tableService.preprocessRowData(form.value, this.columns);
+
+    console.log(row);
+
+    this.showEditModal = false;
+    this.tableService
+      .updateRow(this.selectedTable!, row, this.rows[rowIndex].id)
+      .subscribe(
+        () => {
+          this.editMode[rowIndex] = false;
+        },
+        (error) => {
+          console.error('Error updating row:', error);
+          this.errorMessage = 'Failed to update row.';
+        }
+      );
   }
 
   deleteRow(rowId: number, rowIndex: number) {
     const deletedRow = this.rows.splice(rowIndex, 1)[0];
 
-    this.tableService.deleteRow(this.tableName!, rowId).subscribe(
+    this.tableService.deleteRow(this.selectedTable!, rowId).subscribe(
       () => {
         // Successfully deleted
       },
@@ -210,6 +272,11 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
   closeModal() {
     this.showModal = false;
+  }
+
+  closeEditModal(rowIndex) {
+    this.showEditModal = false;
+    this.editMode[rowIndex] = false;
   }
 
   onColumnSelect(column: string) {
@@ -231,31 +298,7 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   onTableScroll(event: Event) {
     const target = event.target as HTMLElement;
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) {
-      this.loadMoreRows();
+      this.fetchRows();
     }
-  }
-
-  loadMoreRows() {
-    if (this.loadingMore) return;
-
-    this.loadingMore = true;
-    const options: GetRowsOptions = {
-      offset: this.page * this.pageSize,
-      limit: this.pageSize,
-    };
-
-    this.tableService.getRows(this.tableName!, options).subscribe(
-      (data) => {
-        if (data.rows.length > 0) {
-          this.rows = [...this.rows, ...data.rows];
-          this.page++;
-        }
-        this.loadingMore = false;
-      },
-      (error) => {
-        console.error('Error fetching more rows:', error);
-        this.loadingMore = false;
-      }
-    );
   }
 }

@@ -3,12 +3,14 @@ import { mapType } from '../../types/type-mapper';
 import { DataSource } from '../../types/data-source-config';
 
 class MssqlService extends TableService {
-  constructor(dbConfig: any) {
-    super(dbConfig, 'mssql');
+  constructor() {
+    super();
+    this.sourceType = DataSource.MSSQL;
   }
 
-  async getTableStructure(table: string) {
-    const result = await this.db.raw(
+  async getTableStructure(sourceId: number, table: string) {
+    const client = this.getClient(sourceId);
+    const result = await client.raw(
       `
       SELECT COLUMN_NAME AS column_name, DATA_TYPE AS data_type, IS_NULLABLE AS is_nullable, COLUMN_DEFAULT AS column_default
       FROM INFORMATION_SCHEMA.COLUMNS
@@ -16,7 +18,7 @@ class MssqlService extends TableService {
       [table]
     );
 
-    const foreignKeys = await this.db.raw(
+    const foreignKeys = await client.raw(
       `
       SELECT k.COLUMN_NAME AS column_name, fk.TABLE_NAME AS foreign_table, fk.COLUMN_NAME AS foreign_column
       FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE k
@@ -26,7 +28,7 @@ class MssqlService extends TableService {
       [table]
     );
 
-    const primaryKeys = await this.db.raw(
+    const primaryKeys = await client.raw(
       `
       SELECT COLUMN_NAME AS column_name
       FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
@@ -35,7 +37,7 @@ class MssqlService extends TableService {
       [table]
     );
 
-    const identityColumns = await this.db.raw(
+    const identityColumns = await client.raw(
       `
       SELECT COLUMN_NAME 
       FROM INFORMATION_SCHEMA.COLUMNS 
@@ -61,17 +63,19 @@ class MssqlService extends TableService {
     }));
   }
 
-  async getTables() {
+  async getTables(sourceId: number) {
     try {
-      const result = await this.db
+      const client = this.getClient(sourceId);
+      const config = this.getCurrentConfig(sourceId);
+      const result = await client
         .select('TABLE_NAME')
         .from('INFORMATION_SCHEMA.TABLES')
-        .where('TABLE_CATALOG', this.dbConfig.database)
+        .where('TABLE_CATALOG', config.database)
         .andWhere('TABLE_TYPE', 'BASE TABLE');
 
       return result
         .map((row) => row.TABLE_NAME)
-        .filter((table) => this.isTableAccessible(table));
+        .filter((table) => this.isTableAccessible(sourceId, table));
     } catch (error) {
       console.error('Error fetching tables:', error);
       throw new Error('Failed to fetch tables');

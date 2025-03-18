@@ -1,6 +1,7 @@
 import knex from 'knex';
 import { DataSource, PostgresConfig } from '../../types/data-source-config';
 import { MSSLConfig } from 'src/app/models/datasource-config.model';
+import { getConfig } from '../configService';
 
 interface FilterCondition {
   column: string;
@@ -16,17 +17,43 @@ interface GetRowsOptions {
 }
 
 abstract class TableService {
-  protected db: knex.Knex;
+  protected sourceType: DataSource = DataSource.MSSQL;
+  protected knexClients = {
+    [DataSource.Postgres]: 'pg',
+    [DataSource.MSSQL]: 'mssql',
+  };
   protected dbConfig: PostgresConfig | MSSLConfig;
+  private clients: Map<number, knex.Knex<any, any[]>>;
 
-  constructor(dbConfig: PostgresConfig | MSSLConfig, client: 'pg' | 'mssql') {
-    this.db = knex({ client, connection: dbConfig });
-    this.dbConfig = dbConfig;
+  constructor() {
+    this.clients = new Map();
   }
 
-  async getRows(table: string, options: GetRowsOptions = {}) {
+  protected getCurrentConfig(sourceId: number) {
+    const config = getConfig();
+
+    return config.sourcesConfig[this.sourceType][sourceId] as
+      | PostgresConfig
+      | MSSLConfig;
+  }
+
+  protected getClient(sourceId: number) {
+    if (!this.clients.has(sourceId)) {
+      const config = this.getCurrentConfig(sourceId);
+      const dbClient = knex({
+        client: this.knexClients[this.sourceType],
+        connection: config,
+      });
+
+      this.clients.set(sourceId, dbClient);
+    }
+    return this.clients.get(sourceId)!;
+  }
+
+  async getRows(sourceId: number, table: string, options: GetRowsOptions = {}) {
     try {
-      let query = this.db(table).select('*');
+      const client = this.getClient(sourceId);
+      let query = client(table).select('*');
 
       if (options.filterBy) {
         options.filterBy.forEach(({ column, operator = '=', value }) => {
@@ -60,28 +87,32 @@ abstract class TableService {
     }
   }
 
-  async insertRow(table: string, row: any) {
-    return await this.db(table).insert(row).returning('*');
+  async insertRow(sourceId: number, table: string, row: any) {
+    return await this.getClient(sourceId)(table).insert(row).returning('*');
   }
 
-  async updateRow(table: string, id: any, row: any) {
-    return await this.db(table).where({ id }).update(row).returning('*');
+  async updateRow(sourceId: number, table: string, id: any, row: any) {
+    return await this.getClient(sourceId)(table)
+      .where({ id })
+      .update(row)
+      .returning('*');
   }
 
-  async deleteRow(table: string, id: any) {
-    return await this.db(table).where({ id }).del();
+  async deleteRow(sourceId: number, table: string, id: any) {
+    return await this.getClient(sourceId)(table).where({ id }).del();
   }
 
-  isTableAccessible(tableName: string) {
-    return this.dbConfig.tables.some(({ pattern }) => {
+  isTableAccessible(sourceId: number, tableName: string) {
+    const config = this.getCurrentConfig(sourceId);
+    return config.tables.some(({ pattern }) => {
       const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`, 'i');
       return regex.test(tableName);
     });
   }
 
-  abstract getTableStructure(table: string): Promise<any>;
+  abstract getTableStructure(sourceId: number, table: string): Promise<any>;
 
-  abstract getTables(): Promise<string[]>;
+  abstract getTables(sourceId: number): Promise<string[]>;
 }
 
 export default TableService;

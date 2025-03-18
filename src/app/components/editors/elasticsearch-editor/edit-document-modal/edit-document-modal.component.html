@@ -1,0 +1,26 @@
+<div id="editDocumentModal" class="modal" style="display: block">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Document</h5>
+        <button type="button" class="close" (click)="closeModal()">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+        <app-json-key-value-editor
+          [schema]="schema"
+          [data]="initialData"
+          (dataChange)="jsonData = $event"
+        ></app-json-key-value-editor>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveDocument()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,20 +9,17 @@ import { DataSourceConfig, DataSource } from './models/datasource-config.model';
 })
 export class AppComponent implements OnInit {
   config: DataSourceConfig | null = null;
+  selectedSource: { sourceType: string; id: number };
 
   constructor(private configService: ConfigService) {}
 
-  ngOnInit() {
-    this.configService.getConfig().subscribe((data) => {
-      this.config = data;
-    });
+  ngOnInit() {}
+
+  onSourceSelected(source) {
+    this.selectedSource = source;
   }
 
-  get selectedSource() {
-    return this.config?.selectedSource;
-  }
-
-  get sourceConfig() {
-    return this.config?.sourcesConfig[this.selectedSource!];
+  unselectSource() {
+    this.selectedSource = null;
   }
 }

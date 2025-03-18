@@ -1,12 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-} from '@angular/core';
-import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
-
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 @Component({
   selector: 'app-add-document-modal',
   templateUrl: './add-document-modal.component.html',
@@ -15,18 +7,8 @@ import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
 export class AddDocumentModalComponent {
   @Input() schema = {};
   @Output() documentAdded = new EventEmitter<any>();
-  @ViewChild(JsonEditorComponent, { static: false })
-  editor: JsonEditorComponent;
 
-  editorOptions: JsonEditorOptions;
   jsonData: any = {}; // Default JSON data
-
-  constructor() {
-    this.editorOptions = new JsonEditorOptions();
-    this.editorOptions.mode = 'text';
-    this.editorOptions.mainMenuBar = false;
-    //this.options.mode = 'code'; //set only one mode
-  }
 
   onJsonChange(event: any) {
     if (!event.srcElement) return;

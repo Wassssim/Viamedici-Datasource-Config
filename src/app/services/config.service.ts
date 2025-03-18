@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { DataSourceConfig } from '../models/datasource-config.model';
+import {
+  DataSource,
+  DataSourceConfig,
+} from '../models/datasource-config.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,5 +17,17 @@ export class ConfigService {
 
   getConfig(): Observable<DataSourceConfig> {
     return this.http.get<DataSourceConfig>(this.API_URL);
+  }
+
+  getSourceTypes() {
+    return this.http.get<{ sources: DataSource[] }>(
+      this.API_URL + '/sources/types'
+    );
+  }
+
+  getSources(sourceType: string) {
+    return this.http.get<{ data: string[] }>(
+      this.API_URL + '/sources/' + sourceType
+    );
   }
 }

@@ -1,15 +1,19 @@
-import { getConfig } from '../configService';
 import { DataSource } from '../../types/data-source-config';
 import PostgresService from './postgresService';
 import MssqlService from './mssqlService';
 import TableService from './tableService';
 
-const config = getConfig();
-const selectedConfig = config.sourcesConfig[config.selectedSource];
+class ServiceFactory {
+  static services = {
+    [DataSource.Postgres]: new PostgresService(),
+    [DataSource.MSSQL]: new MssqlService(),
+  };
 
-const service =
-  config.selectedSource === DataSource.Postgres
-    ? new PostgresService(selectedConfig)
-    : new MssqlService(selectedConfig);
+  static get(sourceType: DataSource) {
+    if (!Object.keys(this.services).includes(sourceType)) throw new Error();
 
-export default service as TableService;
+    return this.services[sourceType];
+  }
+}
+
+export default ServiceFactory;

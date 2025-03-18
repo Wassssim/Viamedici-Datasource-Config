@@ -9,6 +9,8 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
+import { DataSource } from 'src/app/models/datasource-config.model';
+import { Column } from 'src/app/models/table.model';
 import { TableService } from 'src/app/services/table.service';
 
 @Component({
@@ -17,11 +19,13 @@ import { TableService } from 'src/app/services/table.service';
   styleUrls: ['./add-row-modal.component.css'],
 })
 export class AddRowModalComponent implements OnInit, OnChanges {
+  @Input() sourceType: DataSource;
+  @Input() sourceId;
   @Input() showModal = false;
   @Input() editMode = false;
   @Input() selectedItem: any = null;
   @Input() data = {};
-  @Input() columns: any[] = []; // Receive columns from TableEditorComponent
+  @Input() columns: Column[] = []; // Receive columns from TableEditorComponent
   @Output() closeModalEvent = new EventEmitter<void>();
   @Output() saveItemEvent = new EventEmitter<any>();
 

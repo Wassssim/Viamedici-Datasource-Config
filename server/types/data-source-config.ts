@@ -37,10 +37,10 @@ export interface FileConfig {
 }
 
 type SourcesConfig = {
-  [DataSource.File]: FileConfig;
-  [DataSource.MSSQL]: MSSQLConfig;
-  [DataSource.Postgres]: PostgresConfig;
-  [DataSource.Elasticsearch]: ElasticsearchConfig;
+  [DataSource.File]: FileConfig[];
+  [DataSource.MSSQL]: MSSQLConfig[];
+  [DataSource.Postgres]: PostgresConfig[];
+  [DataSource.Elasticsearch]: ElasticsearchConfig[];
 };
 
 export class DataSourceConfig {

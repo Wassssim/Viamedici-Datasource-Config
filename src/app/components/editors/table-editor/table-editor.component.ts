@@ -2,16 +2,18 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnInit,
+  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { TableService } from '../../../services/table.service';
 import { DataSource } from '../../../models/datasource-config.model';
-import { GetRowsOptions } from 'src/app/models/table.model';
+import { Column, GetRowsOptions } from 'src/app/models/table.model';
 
 @Component({
   selector: 'app-table-editor',
@@ -19,13 +21,17 @@ import { GetRowsOptions } from 'src/app/models/table.model';
   styleUrls: ['./table-editor.component.css'],
 })
 export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
-  @Input() source?: DataSource;
+  @Input() sourceType: DataSource;
+  @Input('id') sourceId;
+  @Output() exit = new EventEmitter<any>();
   @ViewChild('sentinel') sentinel: ElementRef;
 
   tables: string[] = [];
   selectedTable: string | null = null;
 
-  columns: any[] = [];
+  columns: Column[] = [];
+  primaryKeys: Column[] = [];
+
   searchString: string = '';
   selectedColumn: string | null = null;
   rows: any[] = [];
@@ -33,7 +39,6 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   editMode: { [key: number]: boolean } = {}; // Tracks edited rows
   errorMessage: string = '';
   showModal = false;
-  showEditModal = false;
   loading: boolean = false;
   editingRow: any;
 
@@ -62,7 +67,7 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   loadTables(): void {
-    this.tableService.getTables().subscribe(
+    this.tableService.getTables(this.sourceType, this.sourceId).subscribe(
       (res) => {
         this.tables = res.tables;
       },
@@ -95,7 +100,12 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
       (entries) => {
         const target = entries[0];
 
-        if (target.isIntersecting && !this.loadingRows) {
+        if (
+          target.isIntersecting &&
+          !this.loadingRows &&
+          this.sourceId !== null &&
+          this.selectedTable !== null
+        ) {
           this.fetchRows({}, false);
         }
       },
@@ -118,17 +128,22 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
   fetchTableStructure() {
     this.loading = true;
-    this.tableService.getTableStructure(this.selectedTable!).subscribe(
-      (data) => {
-        this.columns = data.columns;
-        this.loading = false;
-      },
-      (error) => {
-        console.error('Error fetching table structure:', error);
-        this.errorMessage = 'Failed to load table structure.';
-        this.loading = false;
-      }
-    );
+    this.tableService
+      .getTableStructure(this.sourceType, this.sourceId, this.selectedTable!)
+      .subscribe(
+        (data) => {
+          this.columns = data.columns;
+          this.primaryKeys = this.columns.filter(
+            (c) => c.constraints.primaryKey
+          );
+          this.loading = false;
+        },
+        (error) => {
+          console.error('Error fetching table structure:', error);
+          this.errorMessage = 'Failed to load table structure.';
+          this.loading = false;
+        }
+      );
   }
 
   search() {
@@ -171,27 +186,29 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
       filterBy,
     };
 
-    this.tableService.getRows(this.selectedTable!, options).subscribe(
-      (data) => {
-        if (reset) {
-          this.rows = data.rows;
-        } else {
-          this.rows = [...this.rows, ...data.rows];
-        }
-        if (data.rows.length > 0) {
-          this.page++;
-        } else {
-          this.isLastPage = true;
-        }
+    this.tableService
+      .getRows(this.sourceType, this.sourceId, this.selectedTable!, options)
+      .subscribe(
+        (data) => {
+          if (reset) {
+            this.rows = data.rows;
+          } else {
+            this.rows = [...this.rows, ...data.rows];
+          }
+          if (data.rows.length > 0) {
+            this.page++;
+          } else {
+            this.isLastPage = true;
+          }
 
-        this.loadingRows = false;
-      },
-      (error) => {
-        console.error('Error fetching rows:', error);
-        this.errorMessage = 'Failed to load rows.';
-        this.loadingRows = false;
-      }
-    );
+          this.loadingRows = false;
+        },
+        (error) => {
+          console.error('Error fetching rows:', error);
+          this.errorMessage = 'Failed to load rows.';
+          this.loadingRows = false;
+        }
+      );
   }
 
   addRow(form: FormGroup) {
@@ -210,38 +227,55 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
     this.rows.push(tempRow);
 
-    this.tableService.insertRow(this.selectedTable!, newRow).subscribe(
-      (savedRow) => {
-        const index = this.rows.findIndex((r) => r.id === tempId);
-        if (index !== -1) {
-          this.rows[index] = savedRow;
+    this.tableService
+      .insertRow(this.sourceType, this.sourceId, this.selectedTable!, newRow)
+      .subscribe(
+        (response) => {
+          const index = this.rows.findIndex((r) => r.id === tempId);
+          if (index !== -1) {
+            this.rows[index] = response.row;
+          }
+          this.closeModal();
+          form.reset();
+        },
+        (error) => {
+          console.error('Error adding row:', error);
+          this.rows = this.rows.filter((r) => r.id !== tempId);
+          this.errorMessage = 'Failed to add row.';
         }
-        this.closeModal();
-        form.reset();
-      },
-      (error) => {
-        console.error('Error adding row:', error);
-        this.rows = this.rows.filter((r) => r.id !== tempId);
-        this.errorMessage = 'Failed to add row.';
-      }
-    );
+      );
   }
 
   editRow(rowIndex: number) {
     this.editMode[rowIndex] = true;
-    this.showEditModal = true;
   }
 
   saveRow(form: FormGroup, rowIndex: number) {
     const row = this.tableService.preprocessRowData(form.value, this.columns);
 
-    console.log(row);
-
-    this.showEditModal = false;
     this.tableService
-      .updateRow(this.selectedTable!, row, this.rows[rowIndex].id)
+      .updateRow(
+        this.sourceType,
+        this.sourceId,
+        this.selectedTable!,
+        row,
+        this.rows[rowIndex].id
+      )
       .subscribe(
         () => {
+          this.tableService
+            .getRows(this.sourceType, this.sourceId, this.selectedTable, {
+              filterBy: this.primaryKeys.map((k) => ({
+                column: k.name,
+                value: this.rows[rowIndex][k.name] + '',
+                operator: '=',
+              })),
+              limit: 1,
+            })
+            .subscribe((res) => {
+              if (res.rows?.length > 0) this.rows[rowIndex] = res.rows[0];
+            });
+
           this.editMode[rowIndex] = false;
         },
         (error) => {
@@ -254,16 +288,18 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   deleteRow(rowId: number, rowIndex: number) {
     const deletedRow = this.rows.splice(rowIndex, 1)[0];
 
-    this.tableService.deleteRow(this.selectedTable!, rowId).subscribe(
-      () => {
-        // Successfully deleted
-      },
-      (error) => {
-        console.error('Error deleting row:', error);
-        this.rows.splice(rowIndex, 0, deletedRow);
-        this.errorMessage = 'Failed to delete row.';
-      }
-    );
+    this.tableService
+      .deleteRow(this.sourceType, this.sourceId, this.selectedTable!, rowId)
+      .subscribe(
+        () => {
+          // Successfully deleted
+        },
+        (error) => {
+          console.error('Error deleting row:', error);
+          this.rows.splice(rowIndex, 0, deletedRow);
+          this.errorMessage = 'Failed to delete row.';
+        }
+      );
   }
 
   openModal() {
@@ -275,7 +311,6 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   closeEditModal(rowIndex) {
-    this.showEditModal = false;
     this.editMode[rowIndex] = false;
   }
 
@@ -300,5 +335,9 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) {
       this.fetchRows();
     }
+  }
+
+  goBack() {
+    this.exit.emit();
   }
 }

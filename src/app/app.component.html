@@ -1,10 +1,30 @@
-<div class="app" *ngIf="config">
-  <ng-container [ngSwitch]="selectedSource">
-    <app-file-editor *ngSwitchCase="'File'"></app-file-editor>
-    <app-table-editor *ngSwitchCase="'Postgres'"></app-table-editor>
-    <app-table-editor *ngSwitchCase="'MSSQL'"></app-table-editor>
+<div class="app">
+  <app-source-selector
+    *ngIf="!selectedSource"
+    (sourceSelected)="onSourceSelected($event)"
+  ></app-source-selector>
+  <ng-container [ngSwitch]="selectedSource.sourceType" *ngIf="selectedSource">
+    <app-file-editor
+      *ngSwitchCase="'File'"
+      [id]="selectedSource.id"
+      (exit)="unselectSource()"
+    ></app-file-editor>
+    <app-table-editor
+      *ngSwitchCase="'Postgres'"
+      [id]="selectedSource.id"
+      [sourceType]="selectedSource.sourceType"
+      (exit)="unselectSource()"
+    ></app-table-editor>
+    <app-table-editor
+      *ngSwitchCase="'MSSQL'"
+      [id]="selectedSource.id"
+      [sourceType]="selectedSource.sourceType"
+      (exit)="unselectSource()"
+    ></app-table-editor>
     <app-elasticsearch-editor
       *ngSwitchCase="'Elasticsearch'"
+      [id]="selectedSource.id"
+      (exit)="unselectSource()"
     ></app-elasticsearch-editor>
     <!--<app-mssql-editor *ngSwitchCase="'MSSQL'" [config]="sourceConfig"></app-mssql-editor>-->
     <p *ngSwitchDefault>No editor available</p>

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { DataSource } from '../models/datasource-config.model';
-import { GetRowsOptions } from '../models/table.model';
+import { Column, GetRowsOptions } from '../models/table.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,16 +14,25 @@ export class TableService {
 
   constructor(private http: HttpClient) {}
 
-  getTables() {
-    return this.http.get<any>(`${this.apiUrl}/tables`);
+  getTables(sourceType: string, sourceId) {
+    return this.http.get<any>(
+      `${this.apiUrl}/tables/${sourceType}/${sourceId}`
+    );
   }
 
-  getTableStructure(table: string) {
-    return this.http.get<any>(`${this.apiUrl}/tables/${table}/structure`);
+  getTableStructure(sourceType: string, sourceId, table: string) {
+    return this.http.get<{ columns: Column[] }>(
+      `${this.apiUrl}/tables/${sourceType}/${sourceId}/${table}/structure`
+    );
   }
 
   // Get rows for a specific table
-  getRows(table: string, options?: GetRowsOptions): Observable<any> {
+  getRows(
+    sourceType: string,
+    sourceId,
+    table: string,
+    options?: GetRowsOptions
+  ): Observable<any> {
     let params = new HttpParams();
 
     if (options?.filterBy) {
@@ -42,22 +51,33 @@ export class TableService {
       params = params.set('orderDirection', options.orderDirection || 'ASC');
     }
 
-    return this.http.get<any>(`${this.apiUrl}/tables/${table}/rows`, {
-      params,
-    });
+    return this.http.get<any>(
+      `${this.apiUrl}/tables/${sourceType}/${sourceId}/${table}/rows`,
+      {
+        params,
+      }
+    );
   }
 
-  insertRow(table: string, row: any) {
-    return this.http.post<any>(`${this.apiUrl}/tables/${table}/rows`, row);
+  insertRow(sourceType: string, sourceId, table: string, row: any) {
+    return this.http.post<any>(
+      `${this.apiUrl}/tables/${sourceType}/${sourceId}/${table}/rows`,
+      row
+    );
   }
   // Update a row in the table
-  updateRow(table: string, row: any, id: string) {
-    return this.http.put(`${this.apiUrl}/tables/${table}/rows/${id}`, row);
+  updateRow(sourceType: string, sourceId, table: string, row: any, id: string) {
+    return this.http.patch(
+      `${this.apiUrl}/tables/${sourceType}/${sourceId}/${table}/rows/${id}`,
+      row
+    );
   }
 
   // Delete a row from the table
-  deleteRow(table: string, rowId: number) {
-    return this.http.delete(`${this.apiUrl}/tables/${table}/rows/${rowId}`);
+  deleteRow(sourceType: string, sourceId, table: string, rowId: number) {
+    return this.http.delete(
+      `${this.apiUrl}/tables/${sourceType}/${sourceId}/${table}/rows/${rowId}`
+    );
   }
 
   // Preprocess row data based on column types before sending it to the backend

@@ -1,0 +1,49 @@
+<div class="dropdown">
+  <button
+    class="btn btn-secondary dropdown-toggle"
+    type="button"
+    id="sourcesDropdown"
+    data-toggle="dropdown"
+    aria-haspopup="true"
+    aria-expanded="false"
+  >
+    {{ selectedSourceType ? selectedSourceType : "Select a source Type" }}
+  </button>
+  <div class="dropdown-menu" aria-labelledby="sourcesDropdown">
+    <button
+      *ngFor="let source of sourceTypes"
+      class="dropdown-item"
+      type="button"
+      (click)="selectSourceType(source)"
+    >
+      {{ source }}
+    </button>
+  </div>
+</div>
+
+<div class="dropdown" *ngIf="selectedSourceType">
+  <button
+    class="btn btn-secondary dropdown-toggle"
+    type="button"
+    id="sourcesDropdown"
+    data-toggle="dropdown"
+    aria-haspopup="true"
+    aria-expanded="false"
+  >
+    {{ selectedSource ? selectedSourceLabel : "Select a source" }}
+  </button>
+  <div class="dropdown-menu" aria-labelledby="sourcesDropdown">
+    <button
+      *ngFor="let source of sources"
+      class="dropdown-item"
+      type="button"
+      (click)="selectSource(source.id, source.label)"
+    >
+      {{ source.label }}
+    </button>
+  </div>
+</div>
+
+<div *ngIf="errorMessage" class="alert alert-danger">
+  {{ errorMessage }}
+</div>

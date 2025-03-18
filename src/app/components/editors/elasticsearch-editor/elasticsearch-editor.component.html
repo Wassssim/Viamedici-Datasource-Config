@@ -1,4 +1,9 @@
 <div class="container">
+  <button class="back-button" (click)="goBack()">
+    <span class="arrow">←</span>
+    <span>Back To Source Selection</span>
+  </button>
+
   <h2>Elasticsearch Document Editor</h2>
 
   <div *ngIf="indices.length === 0 && !loading">
@@ -44,6 +49,24 @@
       >
         Search
       </button>
+      <button
+        class="btn btn-outline-secondary dropdown-toggle"
+        type="button"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+        (click)="toggleFilterDropdown()"
+      >
+        Filters
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <label *ngFor="let field of filterFields" class="dropdown-item">
+          <input type="checkbox" [(ngModel)]="field.selected" />
+          {{ field.name }}
+        </label>
+        <div class="dropdown-divider"></div>
+        <button class="btn btn-primary btn-sm mx-2">Apply</button>
+      </div>
     </div>
   </div>
 
@@ -60,6 +83,16 @@
     (documentAdded)="onDocumentAdded($event)"
   ></app-add-document-modal>
 
+  <app-edit-document-modal
+    *ngIf="editingDocumentId"
+    [sourceId]="sourceId"
+    [index]="selectedIndex"
+    [documentId]="editingDocumentId"
+    [schema]="indexSchema"
+    (documentEdited)="onDocumentEdited($event)"
+    (modalClosed)="onDocumentEditClose()"
+  ></app-edit-document-modal>
+
   <!-- Documents Table -->
   <div class="documents">
     <h3 *ngIf="documents.length">Documents in {{ selectedIndex }}</h3>
@@ -72,49 +105,28 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let doc of documents">
+        <tr *ngFor="let doc of documents; index as idx">
           <td>{{ doc._id }}</td>
           <td>
             <!-- Show JSON when not editing -->
-            <pre *ngIf="editingDocumentId !== doc.id">{{ doc | json }}</pre>
+            <pre>{{ doc.truncated }}</pre>
 
-            <!-- Show input fields when editing -->
-            <div *ngIf="editingDocumentId === doc.id">
-              <textarea
-                class="form-control"
-                [(ngModel)]="jsonString"
-                (ngModelChange)="updateEditedDocument()"
-              >
-              </textarea>
-            </div>
+            <button
+              class="back-button"
+              (click)="viewDocument(doc._id)"
+              *ngIf="doc.truncated.endsWith('...')"
+            >
+              <span>See More</span>
+            </button>
           </td>
           <td class="action-cell">
-            <!-- Show Edit button if not editing -->
             <button
-              *ngIf="editingDocumentId !== doc.id"
               class="btn btn-primary btn-sm"
-              (click)="editDocument(doc)"
+              (click)="editDocument(doc, idx)"
             >
               Edit
             </button>
 
-            <!-- Show Save and Cancel buttons when editing -->
-            <button
-              *ngIf="editingDocumentId === doc.id"
-              class="btn btn-success btn-sm"
-              (click)="saveDocument()"
-            >
-              Save
-            </button>
-            <button
-              *ngIf="editingDocumentId === doc.id"
-              class="btn btn-secondary btn-sm"
-              (click)="cancelEdit()"
-            >
-              Cancel
-            </button>
-
-            <!-- Delete button -->
             <button
               class="btn btn-danger btn-sm"
               (click)="deleteDocument(doc.id)"
@@ -125,6 +137,15 @@
         </tr>
       </tbody>
     </table>
+
+    <app-document-viewer-modal
+      *ngIf="viewingDocumentId"
+      [sourceId]="sourceId"
+      [index]="selectedIndex"
+      [documentId]="viewingDocumentId"
+      (onClose)="closeViewModal()"
+    ></app-document-viewer-modal>
+
     <div class="spinner-container" *ngIf="loadingDocuments">
       <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>

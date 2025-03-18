@@ -2,7 +2,8 @@ import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { TableService } from 'src/app/services/table.service';
-import { FilterCondition } from 'src/app/models/table.model';
+import { Column, FilterCondition } from 'src/app/models/table.model';
+import { DataSource } from 'src/app/models/datasource-config.model';
 
 @Component({
   selector: 'app-foreign-key-select',
@@ -10,7 +11,9 @@ import { FilterCondition } from 'src/app/models/table.model';
   styleUrls: ['./foreign-key-select.component.css'],
 })
 export class ForeignKeySelectComponent implements OnInit {
-  @Input() column: any; // Receive column details
+  @Input() sourceType: DataSource;
+  @Input() sourceId;
+  @Input() column: Column; // Receive column details
   @Output() valueChange = new EventEmitter<any>(); // Emit selected value
   @Input() isInvalid: boolean = false;
 
@@ -52,7 +55,7 @@ export class ForeignKeySelectComponent implements OnInit {
         : null;
 
       this.tableService
-        .getRows(foreignTable, {
+        .getRows(this.sourceType, this.sourceId, foreignTable, {
           filterBy: filter ? [filter] : [],
           offset: this.offset,
           limit: 15,

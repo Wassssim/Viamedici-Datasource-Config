@@ -21,10 +21,10 @@
   width: 200px;
 }
 
-.actions-bar {
+.search-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 60px;
 }
 
 .search-input {
@@ -83,4 +83,10 @@ thead th {
 .sentinel {
   height: 10px;
   width: 10px;
+}
+
+.table-list {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }

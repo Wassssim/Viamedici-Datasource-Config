@@ -1,4 +1,8 @@
 <div class="container file-editor">
+  <button class="back-button" (click)="goBack()">
+    <span class="arrow">←</span>
+    <span>Back To Source Selection</span>
+  </button>
   <app-key-value-editor
     *ngIf="parsedData"
     [data]="parsedData"

@@ -10,13 +10,18 @@ export class FileParserService {
 
   constructor(private http: HttpClient) {}
 
-  getPropertiesFileData(): Observable<{ data: Record<string, string> }> {
+  getPropertiesFileData(
+    sourceId: string
+  ): Observable<{ data: Record<string, string> }> {
     return this.http.get<{ data: Record<string, string> }>(
-      `${this.apiUrl}/files/parsed`
+      `${this.apiUrl}/files/${sourceId}/parsed`
     );
   }
 
-  updatePropertiesFileData(data: Record<string, string>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/files`, { data });
+  updatePropertiesFileData(
+    sourceId: string,
+    data: Record<string, string>
+  ): Observable<any> {
+    return this.http.put(`${this.apiUrl}/files/${sourceId}`, { data });
   }
 }

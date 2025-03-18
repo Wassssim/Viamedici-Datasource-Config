@@ -1,46 +1,72 @@
-import { DataSource } from '../types/data-source-config';
+import { DataSource, FileConfig } from '../types/data-source-config';
 import * as configService from './configService';
 import fs from 'fs';
 import path from 'path';
 
 const config = configService.getConfig();
 
-function getPropertiesFilePath() {
-  const basePath = configService.getConfigBasePath();
+export default class PropertiesFileService {
+  static _instance: PropertiesFileService;
 
-  return path.join(basePath, config.sourcesConfig[DataSource.File].filePath);
-}
+  constructor() {
+    if (PropertiesFileService._instance) {
+      return PropertiesFileService._instance;
+    }
+    PropertiesFileService._instance = this;
+  }
 
-export function parseFile(): Record<string, string> {
-  if (!config.sourcesConfig[DataSource.File]) return {};
+  getCurrentConfig(sourceIndex) {
+    const config = configService.getConfig();
 
-  const file = fs.readFileSync(getPropertiesFilePath());
+    return config.sourcesConfig[DataSource.File][sourceIndex] as FileConfig;
+  }
 
-  if (!file) return {};
+  getPropertiesFilePath(sourceIndex) {
+    const basePath = configService.getConfigBasePath();
 
-  const content = file.toString();
-  const lines = content.split('\n');
+    return path.join(
+      basePath,
+      config.sourcesConfig[DataSource.File][sourceIndex].filePath
+    );
+  }
 
-  const data: Record<string, string> = {};
-  lines.forEach((line) => {
-    const [key, value] = line.split('=');
-    if (key && value) data[key.trim()] = value.trim();
-  });
+  parseFile(sourceIndex: number): Record<string, string> {
+    if (!config.sourcesConfig[DataSource.File]) return {};
 
-  return data;
-}
+    const file = fs.readFileSync(this.getPropertiesFilePath(sourceIndex));
 
-export function createPropertiesFile(
-  keyValueObject: Record<string, string>,
-  filePath: string
-) {
-  const propertiesContent = Object.entries(keyValueObject)
-    .map(([key, value]) => `${key}=${value}`)
-    .join('\n');
+    if (!file) return {};
 
-  fs.writeFileSync(filePath, Buffer.from(propertiesContent, 'utf-8'));
-}
+    const content = file.toString();
+    const lines = content.split('\n');
 
-export function updatePropertiesFile(keyValueObject: Record<string, string>) {
-  createPropertiesFile(keyValueObject, getPropertiesFilePath());
+    const data: Record<string, string> = {};
+    lines.forEach((line) => {
+      const [key, value] = line.split('=');
+      if (key && value) data[key.trim()] = value.trim();
+    });
+
+    return data;
+  }
+
+  createPropertiesFile(
+    keyValueObject: Record<string, string>,
+    filePath: string
+  ) {
+    const propertiesContent = Object.entries(keyValueObject)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n');
+
+    fs.writeFileSync(filePath, Buffer.from(propertiesContent, 'utf-8'));
+  }
+
+  updatePropertiesFile(
+    keyValueObject: Record<string, string>,
+    sourceIndex: number
+  ) {
+    this.createPropertiesFile(
+      keyValueObject,
+      this.getPropertiesFilePath(sourceIndex)
+    );
+  }
 }

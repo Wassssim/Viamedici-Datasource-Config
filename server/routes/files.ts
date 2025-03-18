@@ -1,12 +1,13 @@
+import PropertiesFileService from '../services/propertiesFileService';
 import logger from '../helpers/logger';
 
-const propertiesFileService = require('../services/propertiesFileService');
+const propertiesFileService = new PropertiesFileService();
 const router = require('express').Router();
 
 // Get list of Elasticsearch indices
-router.get('/parsed', async (req, res) => {
+router.get('/:sourceId/parsed', async (req, res) => {
   try {
-    const data = propertiesFileService.parseFile();
+    const data = propertiesFileService.parseFile(req.params.sourceId);
     res.json({ data });
   } catch (error) {
     logger.error(error);
@@ -14,9 +15,12 @@ router.get('/parsed', async (req, res) => {
   }
 });
 
-router.put('/', async (req, res) => {
+router.put('/:sourceId', async (req, res) => {
   try {
-    propertiesFileService.updatePropertiesFile(req.body.data);
+    propertiesFileService.updatePropertiesFile(
+      req.body.data,
+      req.params.sourceId
+    );
     res.json();
   } catch (error) {
     logger.error(error);

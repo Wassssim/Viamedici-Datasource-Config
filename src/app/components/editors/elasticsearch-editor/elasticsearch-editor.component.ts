@@ -2,11 +2,15 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  EventEmitter,
+  Input,
   OnInit,
+  Output,
   ViewChild,
 } from '@angular/core';
 import { DocumentsService } from '../../../services/documents.service';
 import { response } from 'express';
+import { getKeys } from 'src/app/helpers/utils';
 
 @Component({
   selector: 'app-elasticsearch-editor',
@@ -16,11 +20,14 @@ import { response } from 'express';
 export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
   @ViewChild('sentinel') sentinel: ElementRef;
 
+  @Input('id') sourceId;
+  @Output() exit = new EventEmitter<any>();
+
   indices: string[] = [];
   documents: any[] = [];
   selectedIndex: string | null = null;
   editingDocumentId: string | null = null;
-  editedDocument: any = {};
+  editingDocumentIndex: number | null = null;
   jsonString: string = '';
   errorMessage: string = '';
   loading: boolean = true;
@@ -28,9 +35,15 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
   searchString = undefined;
   indexSchema = {};
 
+  showFilters = false;
+  filterFields: { name: string; selected: boolean }[] = [];
+
   page = 1;
   pageSize = 15;
   stopInfiniteScroll = false;
+
+  /* Document Viewer */
+  viewingDocumentId: string;
 
   private observer!: IntersectionObserver;
 
@@ -56,8 +69,6 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
           !this.loadingDocuments &&
           !this.stopInfiniteScroll
         ) {
-          console.log('loading more');
-
           this.loadDocuments(false);
         }
       },
@@ -73,9 +84,13 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
     }
   }
 
+  toggleFilterDropdown() {
+    this.showFilters = !this.showFilters;
+  }
+
   fetchIndices() {
     this.loading = true;
-    this.documentsService.getIndices().subscribe(
+    this.documentsService.getIndices(this.sourceId).subscribe(
       (response) => {
         this.indices = response;
         this.loading = false;
@@ -90,8 +105,15 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
 
   handleIndexListChange() {
     this.documentsService
-      .getSchema(this.selectedIndex)
-      .subscribe((response) => (this.indexSchema = response));
+      .getSchema(this.sourceId, this.selectedIndex)
+      .subscribe((response) => {
+        this.indexSchema = response;
+
+        this.filterFields = getKeys(response).map((k) => ({
+          name: k,
+          selected: false,
+        }));
+      });
     this.loadDocuments();
   }
 
@@ -107,8 +129,10 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
 
     this.documentsService
       .getDocuments(
+        this.sourceId,
         this.selectedIndex,
         this.searchString,
+        this.filterFields.map((field) => field.name),
         this.page,
         this.pageSize
       )
@@ -126,51 +150,23 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
       );
   }
 
-  editDocument(doc: any) {
-    this.editingDocumentId = doc.id;
-    this.editedDocument = { ...doc }; // Clone the document for editing
-    this.jsonString = JSON.stringify(this.editedDocument, null, 2);
-  }
-
-  updateEditedDocument() {
-    try {
-      this.editedDocument = JSON.parse(this.jsonString); // Convert text back to object
-    } catch (e) {
-      console.error('Invalid JSON:', e);
-    }
+  editDocument(doc: any, idx: number) {
+    this.editingDocumentId = doc._id;
+    this.editingDocumentIndex = idx;
+    this.jsonString = JSON.stringify({ ...doc }, null, 2);
   }
 
   cancelEdit() {
     this.editingDocumentId = null;
-    this.editedDocument = {};
-  }
-
-  saveDocument() {
-    if (!this.editingDocumentId) return;
-
-    this.documentsService
-      .updateDocument(
-        this.selectedIndex,
-        this.editingDocumentId,
-        this.editedDocument
-      )
-      .subscribe(
-        () => {
-          //this.loadDocuments();
-          this.documents = this.documents.map((doc) =>
-            doc.id === this.editingDocumentId ? { ...this.editedDocument } : doc
-          );
-          this.cancelEdit();
-        },
-        (error) => console.error('Error updating document', error)
-      );
   }
 
   deleteDocument(docId: string) {
-    this.documentsService.deleteDocument(this.selectedIndex, docId).subscribe(
-      () => this.loadDocuments(),
-      (error) => console.error('Error deleting document', error)
-    );
+    this.documentsService
+      .deleteDocument(this.sourceId, this.selectedIndex, docId)
+      .subscribe(
+        () => this.loadDocuments(),
+        (error) => console.error('Error deleting document', error)
+      );
   }
 
   openModal() {
@@ -179,15 +175,55 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
   }
 
   onDocumentAdded(newDoc: any) {
-    this.documentsService.addDocument(this.selectedIndex, newDoc).subscribe(
-      () => this.loadDocuments(),
-      (error) => console.error('Error adding document', error)
-    );
+    this.documentsService
+      .addDocument(this.sourceId, this.selectedIndex, newDoc)
+      .subscribe(
+        () => this.loadDocuments(),
+        (error) => console.error('Error adding document', error)
+      );
+  }
+
+  onDocumentEditClose() {
+    this.editingDocumentId = null;
+  }
+
+  onDocumentEdited(newDoc: any) {
+    if (!this.editingDocumentIndex) return;
+
+    this.documentsService
+      .getDocument(
+        this.sourceId,
+        this.selectedIndex,
+        this.editingDocumentId,
+        true
+      )
+      .subscribe((res) => {
+        const newDocuments = [...this.documents];
+        newDocuments[this.editingDocumentIndex] = {
+          ...newDocuments[this.editingDocumentIndex],
+          ...res,
+        };
+
+        this.documents = newDocuments;
+        this.onDocumentEditClose();
+      });
   }
 
   search() {
     this.errorMessage = '';
     this.searchString = this.searchString.trim();
     this.loadDocuments();
+  }
+
+  goBack() {
+    this.exit.emit();
+  }
+
+  viewDocument(documentId: string) {
+    this.viewingDocumentId = documentId;
+  }
+
+  closeViewModal() {
+    this.viewingDocumentId = null;
   }
 }

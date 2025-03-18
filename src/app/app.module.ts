@@ -23,12 +23,14 @@ import { TableListComponent } from './components/table-list/table-list.component
 import { TableEditorComponent } from './components/editors/table-editor/table-editor.component';
 import { ElasticsearchEditorComponent } from './components/editors/elasticsearch-editor/elasticsearch-editor.component';
 import { AddDocumentModalComponent } from './components/editors/elasticsearch-editor/add-document-modal/add-document-modal.component';
-import { NgJsonEditorModule } from 'ang-jsoneditor';
 import { DropdownComponent } from './components/ui/dropdown/dropdown.component';
 import { AddRowModalComponent } from './components/editors/table-editor/add-row-modal/add-row-modal.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ForeignKeySelectComponent } from './components/editors/table-editor/foreign-key-select/foreign-key-select.component';
 import { JsonKeyValueEditorComponent } from './components/editors/elasticsearch-editor/json-key-value-editor/json-key-value-editor.component';
+import { SourceSelectorComponent } from './components/source-selector/source-selector.component';
+import { DocumentViewerModalComponent } from './components/editors/elasticsearch-editor/document-viewer-modal/document-viewer-modal.component';
+import { EditDocumentModalComponent } from './components/editors/elasticsearch-editor/edit-document-modal/edit-document-modal.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -53,6 +55,9 @@ export function HttpLoaderFactory(http: HttpClient) {
     AddRowModalComponent,
     ForeignKeySelectComponent,
     JsonKeyValueEditorComponent,
+    SourceSelectorComponent,
+    DocumentViewerModalComponent,
+    EditDocumentModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -63,7 +68,6 @@ export function HttpLoaderFactory(http: HttpClient) {
     AgGridModule,
     FontAwesomeModule,
     ReactiveFormsModule,
-    NgJsonEditorModule,
     NgSelectModule,
     TranslateModule.forRoot({
       loader: {

@@ -20,7 +20,7 @@ TODO:
 
 Document:
 
-- Add filter for indices in elasticsearch - allowed_indices in config json, _x_ in elastic
+- Add filter for indices in elasticsearch - allowed*indices in config json, \_x* in elastic
 - key value editor for adding documents in elastic (read template from back)
 - string search
 
@@ -28,3 +28,20 @@ SQL:
 
 - serach by column
 - allowed tables,
+
+---
+
+Dropdown to select source
+Column Filter Before Search
+
+Elsastic:
+
+- Get a snippet of the file, if the user clicks on top of it, fetch the whole object
+- Add Fields filter (multiple choice)
+
+File:
+
+Put buttons first
+
+- FETCH BY ID CORNER CASE: primary key column has a different name
+- ELASTIC QUERY FIELDS FILTER

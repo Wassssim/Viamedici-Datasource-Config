@@ -1,27 +1,56 @@
-<div class="editor-container">
-  <table>
-    <tbody>
-      <tr *ngFor="let entry of data; let i = index; trackBy: trackByIndex">
-        <td>
-          <input
-            type="text"
-            [value]="entry.key"
-            (input)="updateKey(i, $event.target.value)"
-          />
-        </td>
-        <td>
-          <input
-            type="text"
-            [value]="entry.value"
-            (input)="updateValue(i, $event.target.value)"
-          />
-        </td>
-        <td>
-          <button (click)="deleteEntry(i)">🗑</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <button (click)="addEntry()">Add Entry</button>
-  <button (click)="updateFile()">Save</button>
+<div class="editor-container container mt-4">
+  <div class="table-wrapper">
+    <table class="table table-bordered">
+      <thead class="thead-light">
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let entry of data; let i = index; trackBy: trackByIndex">
+          <td>
+            <input
+              type="text"
+              class="form-control"
+              [value]="entry.key"
+              (input)="updateKey(i, $event.target.value)"
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              class="form-control"
+              [value]="entry.value"
+              (input)="updateValue(i, $event.target.value)"
+            />
+          </td>
+          <td class="text-center">
+            <button class="btn btn-danger btn-sm" (click)="deleteEntry(i)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex buttons">
+    <button class="btn btn-primary" (click)="addEntry()">
+      <i class="bi bi-plus-circle"></i> Add Entry
+    </button>
+    <button
+      class="btn btn-success save-btn"
+      style="width: 80px"
+      (click)="updateFile()"
+    >
+      <app-loading-spinner
+        *ngIf="isSaving"
+        color="inherit"
+        w="15"
+        h="15"
+      ></app-loading-spinner>
+      <span *ngIf="!isSaving"> <i class="bi bi-save"></i> Save </span>
+    </button>
+  </div>
 </div>

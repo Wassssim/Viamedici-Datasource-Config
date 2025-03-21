@@ -10,6 +10,9 @@ export class FileEditorComponent implements OnInit {
   @Input('id') sourceId;
   @Output() exit = new EventEmitter<any>();
 
+  errorMessage = '';
+  isSaving = false;
+
   parsedData: { key: string; value: string }[] = [];
   constructor(private fileParserService: FileParserService) {}
 
@@ -27,9 +30,18 @@ export class FileEditorComponent implements OnInit {
   }
 
   updateFile(data) {
+    this.isSaving = true;
     this.fileParserService
       .updatePropertiesFileData(this.sourceId, data)
-      .subscribe((resp) => {});
+      .subscribe(
+        () => {
+          this.isSaving = false;
+        },
+        () => {
+          this.errorMessage = 'Failed to save file';
+          this.isSaving = false;
+        }
+      );
   }
 
   goBack() {

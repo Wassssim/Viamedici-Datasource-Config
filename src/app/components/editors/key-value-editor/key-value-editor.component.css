@@ -1,0 +1,19 @@
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.table-wrapper {
+  max-height: 70svh;
+  overflow-y: auto;
+}
+
+.buttons {
+  gap: 6px;
+}
+
+.save-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

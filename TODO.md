@@ -45,3 +45,7 @@ Put buttons first
 
 - FETCH BY ID CORNER CASE: primary key column has a different name
 - ELASTIC QUERY FIELDS FILTER
+
+Column All -> None
+
+Use should and list of wildcard

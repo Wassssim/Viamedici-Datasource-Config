@@ -31,6 +31,8 @@ import { JsonKeyValueEditorComponent } from './components/editors/elasticsearch-
 import { SourceSelectorComponent } from './components/source-selector/source-selector.component';
 import { DocumentViewerModalComponent } from './components/editors/elasticsearch-editor/document-viewer-modal/document-viewer-modal.component';
 import { EditDocumentModalComponent } from './components/editors/elasticsearch-editor/edit-document-modal/edit-document-modal.component';
+import { LoadingSpinnerComponent } from './components/ui/loading-spinner/loading-spinner.component';
+import { ErrorMessageCardComponent } from './components/ui/error-message-card/error-message-card.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -58,6 +60,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     SourceSelectorComponent,
     DocumentViewerModalComponent,
     EditDocumentModalComponent,
+    LoadingSpinnerComponent,
+    ErrorMessageCardComponent,
   ],
   imports: [
     BrowserModule,

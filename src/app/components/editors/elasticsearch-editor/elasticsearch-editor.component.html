@@ -1,6 +1,6 @@
 <div class="container">
   <button class="back-button" (click)="goBack()">
-    <span class="arrow">←</span>
+    <i class="bi bi-arrow-left"></i>
     <span>Back To Source Selection</span>
   </button>
 
@@ -10,9 +10,10 @@
     <h5>No indices</h5>
   </div>
 
-  <div *ngIf="errorMessage && !loading" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
+  <app-error-message-card
+    *ngIf="errorMessage && !loading"
+    [errorMessage]="errorMessage"
+  ></app-error-message-card>
 
   <div *ngIf="loading" class="spinner-container">
     <div class="spinner-border text-primary" role="status">

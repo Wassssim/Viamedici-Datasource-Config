@@ -49,6 +49,7 @@
     "ag-grid-community": "^27.3.0",
     "ag-grid-enterprise": "^27.3.0",
     "bootstrap": "^4.6.2",
+    "bootstrap-icons": "^1.11.3",
     "chart.js": "^2.9.4",
     "chartjs-plugin-datalabels": "^0.7.0",
     "class-transformer": "^0.5.1",

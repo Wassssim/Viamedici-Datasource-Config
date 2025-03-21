@@ -7,6 +7,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class KeyValueEditorComponent {
   @Input() data: { key: string; value: string }[] = [];
+  @Input() isSaving = false;
   @Output() fileUpdated = new EventEmitter<Record<string, string>>();
 
   updateValue(index: number, value: string) {

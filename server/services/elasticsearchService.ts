@@ -46,6 +46,8 @@ export default class ElasticsearchService {
       const esClient = this.getClient(sourceId);
       const { body } = await esClient.indices.getMapping({ index });
 
+      console.log(body[index].mappings.properties);
+
       return body[index].mappings.properties;
     } catch (error) {
       console.error(`Error fetching schema for index "${index}":`, error);

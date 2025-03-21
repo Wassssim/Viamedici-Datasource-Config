@@ -26,7 +26,7 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   @Output() exit = new EventEmitter<any>();
   @ViewChild('sentinel') sentinel: ElementRef;
 
-  tables: string[] = [];
+  tables: string[] = null;
   selectedTable: string | null = null;
 
   columns: Column[] = [];
@@ -149,7 +149,7 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   search() {
     this.errorMessage = '';
 
-    if (!this.selectedColumn || this.searchString.trim() === '') {
+    if (!this.selectedColumn) {
       return;
     }
 
@@ -163,7 +163,11 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
     const filterBy = [...(opt?.filterBy ?? [])];
 
-    if (this.selectedColumn && this.selectedColumn !== 'All') {
+    if (
+      this.selectedColumn &&
+      this.selectedColumn !== 'All' &&
+      this.searchString !== ''
+    ) {
       filterBy.push({
         column: this.selectedColumn,
         operator: 'LIKE',
@@ -316,14 +320,14 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
   onColumnSelect(column: string) {
     this.errorMessage = '';
-    if (this.selectedColumn !== column && column === 'All') {
+    if (this.selectedColumn !== column && column === 'None') {
       this.fetchRows();
     }
     this.selectedColumn = column;
   }
 
   get columnNames(): string[] {
-    return ['All', ...this.columns.map((col) => col.name)];
+    return ['None', ...this.columns.map((col) => col.name)];
   }
 
   displayColumnDropdownLabel(selectedItemLabel: string): string {

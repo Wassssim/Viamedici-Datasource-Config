@@ -1,128 +1,139 @@
-<div class="container">
-  <button class="back-button" (click)="goBack()">
-    <span class="arrow">←</span>
-    <span>Back To Source Selection</span>
-  </button>
-
-  <h2>Table Editor</h2>
-
-  <div class="table-list">
-    <h5 style="margin: 0">Table:</h5>
-    <app-table-list
-      [tables]="tables"
-      (selectEvent)="handleTableSelect($event)"
-    ></app-table-list>
-  </div>
-
-  <div *ngIf="errorMessage && !loading" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
-
-  <div class="container" *ngIf="selectedTable">
-    <div class="search-bar">
-      <div class="input-group search-input">
-        <input
-          type="text"
-          [(ngModel)]="searchString"
-          class="form-control"
-          placeholder="Search"
-          aria-label="Search"
-          aria-describedby="basic-addon2"
-        />
-        <div class="input-group-append">
-          <button
-            class="btn btn-outline-secondary"
-            type="button"
-            (click)="search()"
-          >
-            Search
-          </button>
-        </div>
-      </div>
-
-      <app-dropdown
-        *ngIf="columns.length > 0"
-        [items]="columnNames"
-        [placeholder]="'Column: All'"
-        [displayFn]="displayColumnDropdownLabel"
-        (selectionChange)="onColumnSelect($event)"
-      ></app-dropdown>
-    </div>
-
-    <button class="btn btn-primary mb-3" (click)="openModal()">
-      Add New Row
+<main class="table-editor">
+  <div class="container">
+    <button class="back-button" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back To Source Selection</span>
     </button>
 
-    <app-add-row-modal
-      *ngIf="showModal"
-      [showModal]="showModal"
-      [editMode]="editMode"
-      [columns]="columns"
-      [sourceType]="sourceType"
-      [sourceId]="sourceId"
-      (closeModalEvent)="closeModal()"
-      (saveItemEvent)="addRow($event)"
-    >
-    </app-add-row-modal>
+    <h2>Table Editor</h2>
 
-    <div *ngIf="loading" class="spinner-container">
-      <div class="spinner-border text-primary" role="status">
-        <span class="sr-only">Loading...</span>
-      </div>
+    <app-loading-spinner *ngIf="!errorMessage && !tables"></app-loading-spinner>
+    <div class="table-list" *ngIf="tables">
+      <h5 style="margin: 0">Table:</h5>
+      <app-table-list
+        [tables]="tables"
+        (selectEvent)="handleTableSelect($event)"
+      ></app-table-list>
     </div>
 
-    <div *ngIf="!loading">
-      <!-- Existing Rows -->
-      <div class="no-rows" *ngIf="rows.length === 0"><h3>No rows</h3></div>
+    <app-error-message-card
+      *ngIf="errorMessage && !loading"
+      [errorMessage]="errorMessage"
+    ></app-error-message-card>
 
-      <div class="table-container" *ngIf="rows.length > 0">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th *ngFor="let column of columns">{{ column.name }}</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of rows; let i = index">
-              <app-add-row-modal
-                *ngIf="editMode[i] === true"
-                [showModal]="editMode[i] === true"
-                [editMode]="true"
-                [sourceType]="sourceType"
-                [sourceId]="sourceId"
-                [data]="row"
-                [columns]="columns"
-                (closeModalEvent)="closeEditModal(i)"
-                (saveItemEvent)="saveRow($event, i)"
-              >
-              </app-add-row-modal>
-              <td *ngFor="let column of columns">
-                {{ row[column.name] }}
-              </td>
-              <td class="sticky-actions">
-                <button class="btn btn-warning btn-sm" (click)="editRow(i)">
-                  Edit
-                </button>
-                <button
-                  class="btn btn-danger btn-sm"
-                  (click)="deleteRow(row.id, i)"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div class="container" *ngIf="selectedTable">
+      <div class="search-bar">
+        <div class="input-group search-input">
+          <input
+            type="text"
+            [(ngModel)]="searchString"
+            class="form-control"
+            placeholder="Search"
+            aria-label="Search"
+            aria-describedby="basic-addon2"
+          />
+          <div class="input-group-append">
+            <button
+              class="btn btn-outline-secondary search-btn"
+              type="button"
+              (click)="search()"
+              [attr.disabled]="loadingRows ? '' : null"
+            >
+              <app-loading-spinner
+                w="15"
+                h="15"
+                *ngIf="loadingRows"
+              ></app-loading-spinner>
+              <span *ngIf="!loadingRows">Search</span>
+            </button>
+          </div>
+        </div>
+
+        <app-dropdown
+          *ngIf="columns.length > 0"
+          [items]="columnNames"
+          [placeholder]="'Column: None'"
+          [displayFn]="displayColumnDropdownLabel"
+          (selectionChange)="onColumnSelect($event)"
+        ></app-dropdown>
       </div>
 
-      <div class="spinner-container" *ngIf="loadingRows">
+      <button class="btn btn-primary mb-3" (click)="openModal()">
+        <i class="bi bi-plus-circle"></i> Add New Row
+      </button>
+
+      <div *ngIf="loading" class="spinner-container">
         <div class="spinner-border text-primary" role="status">
           <span class="sr-only">Loading...</span>
         </div>
-        {{ loadingRows }}
+      </div>
+
+      <div *ngIf="!loading">
+        <!-- Existing Rows -->
+        <div class="no-rows" *ngIf="rows.length === 0 && !loadingRows">
+          <h3><i class="bi bi-box-seam"></i> No rows</h3>
+        </div>
+
+        <div class="table-container" *ngIf="rows.length > 0">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th *ngFor="let column of columns">{{ column.name }}</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of rows; let i = index">
+                <td *ngFor="let column of columns">
+                  {{ row[column.name] }}
+                </td>
+                <td class="sticky-actions">
+                  <button class="btn btn-warning btn-sm" (click)="editRow(i)">
+                    <i class="bi bi-pencil-square"></i> Edit
+                  </button>
+                  <button
+                    class="btn btn-danger btn-sm"
+                    (click)="deleteRow(row.id, i)"
+                  >
+                    <i class="bi bi-pencil-square"></i> Delete
+                  </button>
+                </td>
+                <app-add-row-modal
+                  *ngIf="editMode[i] === true"
+                  [showModal]="editMode[i] === true"
+                  [editMode]="true"
+                  [sourceType]="sourceType"
+                  [sourceId]="sourceId"
+                  [data]="row"
+                  [columns]="columns"
+                  (closeModalEvent)="closeEditModal(i)"
+                  (saveItemEvent)="saveRow($event, i)"
+                >
+                </app-add-row-modal>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="spinner-container" *ngIf="loadingRows">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
       </div>
     </div>
+    <div #sentinel class="sentinel"></div>
   </div>
-  <div #sentinel class="sentinel"></div>
-</div>
+
+  <app-add-row-modal
+    *ngIf="showModal"
+    [showModal]="showModal"
+    [editMode]="false"
+    [columns]="columns"
+    [sourceType]="sourceType"
+    [sourceId]="sourceId"
+    (closeModalEvent)="closeModal()"
+    (saveItemEvent)="addRow($event)"
+  >
+  </app-add-row-modal>
+</main>

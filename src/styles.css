@@ -1,4 +1,5 @@
 @import "~@ng-select/ng-select/themes/default.theme.css";
+@import "~bootstrap-icons/font/bootstrap-icons.css";
 
 .jsoneditor-text {
   height: 50svh;

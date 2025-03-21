@@ -1,0 +1,17 @@
+<div
+  class="spinner-container d-flex justify-content-center align-items-center"
+  [ngStyle]="{ width: w + 'px', height: h + 'px' }"
+>
+  <div
+    class="spinner-border"
+    role="status"
+    [ngStyle]="{
+      width: w + 'px',
+      height: h + 'px',
+      'border-width': w / 10 + 'px',
+      'border-color': color
+    }"
+  >
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>

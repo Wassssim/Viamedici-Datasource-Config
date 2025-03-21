@@ -44,6 +44,7 @@
   </div>
 </div>
 
-<div *ngIf="errorMessage" class="alert alert-danger">
-  {{ errorMessage }}
-</div>
+<app-error-message-card
+  *ngIf="errorMessage"
+  [errorMessage]="errorMessage"
+></app-error-message-card>

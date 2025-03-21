@@ -1,11 +1,16 @@
 <div class="container file-editor">
   <button class="back-button" (click)="goBack()">
-    <span class="arrow">←</span>
+    <i class="bi bi-arrow-left"></i>
     <span>Back To Source Selection</span>
   </button>
   <app-key-value-editor
     *ngIf="parsedData"
+    [isSaving]="isSaving"
     [data]="parsedData"
     (fileUpdated)="updateFile($event)"
   ></app-key-value-editor>
+  <app-error-message-card
+    *ngIf="errorMessage && !isSaving"
+    [errorMessage]="errorMessage"
+  ></app-error-message-card>
 </div>

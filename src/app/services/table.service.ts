@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { DataSource } from '../models/datasource-config.model';
 import { Column, GetRowsOptions } from '../models/table.model';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TableService {
-  private apiUrl = 'http://localhost:4500/api'; // Your backend URL
+  private apiUrl = environment.apiUrl;
   selectedTableSubject = new BehaviorSubject<string>('');
   selectedTable$ = this.selectedTableSubject.asObservable();
 
@@ -103,7 +103,7 @@ export class TableService {
           break;
         case 'string':
         default:
-          transformedData[key] = value.toString(); // Ensure it's a string
+          transformedData[key] = value.toString();
       }
     });
 

@@ -1,23 +1,43 @@
 import { DataSource } from './data-source-config';
 
+// prettier-ignore
 // Normalized types map for rendering in frontend
 const postgresSqlTypeMap: Record<string, string> = {
   // PostgreSQL types
-  integer: 'number',
-  int: 'number',
-  bigint: 'number',
-  smallint: 'number',
-  boolean: 'boolean',
-  text: 'string',
-  varchar: 'string',
-  'character varying': 'string',
-  char: 'string',
-  timestamp: 'datetime',
-  'timestamp without time zone': 'datetime',
-  date: 'date',
-  float: 'number',
-  decimal: 'number',
-  jsonb: 'json',
+  integer: 'number',                // 32-bit integer
+  int: 'number',                    // Alias for integer
+  bigint: 'number',                 // 64-bit integer
+  smallint: 'number',               // 16-bit integer
+  boolean: 'boolean',               // True/false values
+  text: 'string',                   // Variable-length string
+  varchar: 'string',                // Variable-length string with max length
+  'character varying': 'string',    // Alias for varchar
+  char: 'string',                   // Fixed-length string
+  timestamp: 'datetime',                // Date and time
+  'timestamp without time zone': 'datetime', // Date and time without timezone
+  'timestamp with time zone': 'datetime',
+  date: 'date',                     // Date only
+  float: 'number',                  // Single precision floating-point number
+  decimal: 'number',                // Exact numeric value
+  numeric: 'number',                // Exact numeric value (same as decimal)
+  jsonb: 'object',                  // JSON data (can be parsed as an object)
+  json: 'object',                   // JSON data (can be parsed as an object)
+  'double precision': 'number',       // Double precision floating-point number
+  real: 'number',                   // Single precision floating-point number
+  bytea: 'Buffer',                  // Binary data
+  uuid: 'string',                   // Universally unique identifier
+  inet: 'string',                   // IP address (IPv4 or IPv6)
+  time: 'string',                   // Time without time zone
+  'time without time zone': 'string', // Alias for time
+  interval: 'object',               // Time interval (e.g., '1 day', '2 hours')
+  'character': 'string',            // Fixed-length string (1 character)
+  point: 'object',  // Geospatial point (x, y coordinates)
+  line: 'string',                   // Geospatial line (represented as string)
+  lseg: 'string',                   // Geospatial line segment (represented as string)
+  box: 'string',                    // Geospatial box (represented as string)
+  path: 'string',                   // Geospatial path (represented as string)
+  polygon: 'string',                // Geospatial polygon (represented as string)
+  circle: 'string',                 // Geospatial circle (represented as string)
 };
 
 const mssqlTypeMAp = {

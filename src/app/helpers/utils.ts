@@ -14,8 +14,3 @@ export function getKeys(obj: any, prefix = '', depth = 0): string[] {
 
   return keys;
 }
-
-export function formatISODateForInput(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toISOString().slice(0, 16); // Keep only "YYYY-MM-DDTHH:MM"
-}

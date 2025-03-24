@@ -11,7 +11,7 @@
         <form [formGroup]="form" (ngSubmit)="saveItem()" *ngIf="form">
           <div *ngFor="let column of columns" class="form-group">
             <!-- Add a red star for required fields -->
-            <label [for]="column.name">
+            <label [for]="column.name" *ngIf="column.type !== 'boolean'">
               {{ column.name }}
               <span
                 *ngIf="!column.default && !column.isNullable"
@@ -81,8 +81,9 @@
                 formControlName="{{ column.name }}"
               />
               <input
-                *ngSwitchCase="'boolean'"
-                type="checkbox"
+                *ngSwitchCase="'date'"
+                type="date"
+                class="form-control"
                 [ngClass]="{
                   'is-invalid':
                     form.controls[column.name].invalid &&
@@ -90,6 +91,21 @@
                 }"
                 formControlName="{{ column.name }}"
               />
+              <div class="form-check" *ngSwitchCase="'boolean'">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  [ngClass]="{
+                    'is-invalid':
+                      form.controls[column.name].invalid &&
+                      (form.controls[column.name].touched || submitted)
+                  }"
+                  formControlName="{{ column.name }}"
+                />
+                <label class="form-check-label" for="defaultCheck1">
+                  {{ column.name }}
+                </label>
+              </div>
               <input
                 *ngSwitchDefault
                 type="text"

@@ -5,12 +5,13 @@ import {
   DataSource,
   DataSourceConfig,
 } from '../models/datasource-config.model';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConfigService {
-  private API_URL = 'http://localhost:4500/api/config'; // Backend URL
+  private API_URL = environment.apiUrl + '/config';
   // TODO: use a global config for apis
 
   constructor(private http: HttpClient) {}

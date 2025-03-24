@@ -14,7 +14,14 @@ export interface GetRowsOptions {
 
 export interface Column {
   name: string;
-  type: 'number' | 'boolean' | 'datetime' | 'date' | 'string' | 'json';
+  type:
+    | 'number'
+    | 'boolean'
+    | 'datetime'
+    | 'date'
+    | 'string'
+    | 'object'
+    | 'Buffer';
   isNullable: false;
   default: string;
   constraints: {

@@ -1,6 +1,7 @@
 import { truncateJSON } from '../utils/utils';
 import { DataSource, ElasticsearchConfig } from '../types/data-source-config';
 import { getConfig } from './configService';
+import { flattenElasticsearchMapping } from '../types/type-mapper';
 
 const { Client } = require('@elastic/elasticsearch');
 
@@ -41,16 +42,14 @@ export default class ElasticsearchService {
     return body.map((index) => index.index);
   }
 
-  async getIndexSchema(sourceId, index) {
+  async getIndexMappings(sourceId, index) {
     try {
       const esClient = this.getClient(sourceId);
       const { body } = await esClient.indices.getMapping({ index });
 
-      console.log(body[index].mappings.properties);
-
-      return body[index].mappings.properties;
+      return body[index].mappings;
     } catch (error) {
-      console.error(`Error fetching schema for index "${index}":`, error);
+      console.error(`Error fetching mappings for index "${index}":`, error);
       throw error;
     }
   }
@@ -80,6 +79,44 @@ export default class ElasticsearchService {
     }
   }
 
+  private async buildGetDocumentsQuery(
+    fields: string[],
+    queryString,
+    sourceId,
+    index
+  ) {
+    const mappings = await this.getIndexMappings(sourceId, index);
+    const flattenedMapping = flattenElasticsearchMapping(mappings);
+
+    //console.log(fields, mappings, flattenedMapping);
+
+    const mappedFields = fields.map((field) => {
+      const fieldParentPath = field.split('.').slice(0, -1).join('.');
+      if (
+        field.includes('.') &&
+        flattenedMapping[fieldParentPath] === 'nested'
+      ) {
+        return {
+          nested: {
+            path: fieldParentPath,
+            query: {
+              match: { [field]: queryString },
+            },
+          },
+        };
+      } else {
+        return { match: { [field]: queryString } };
+      }
+    });
+
+    return {
+      bool: {
+        should: mappedFields,
+        minimum_should_match: 1, // At least one condition must match
+      },
+    };
+  }
+
   async getDocuments(
     sourceId,
     index,
@@ -91,27 +128,30 @@ export default class ElasticsearchService {
     const esClient = this.getClient(sourceId);
     const from = (page - 1) * size; // Calculate offset
 
-    const { body } = await esClient.search({
-      index,
-      from,
-      size,
-      body: {
-        query: searchString
-          ? {
-              query_string: {
-                query: `*${searchString}*`, // Wildcard search
-                fields: fields ?? ['*'], // Search across all fields
-                default_operator: 'AND',
-              },
-            }
-          : { match_all: {} }, // If no searchString, return all docs
-      },
-    });
+    try {
+      const { body } = await esClient.search({
+        index,
+        from,
+        size,
+        body: {
+          query: searchString
+            ? await this.buildGetDocumentsQuery(
+                fields,
+                searchString,
+                sourceId,
+                index
+              )
+            : { match_all: {} }, // If no searchString, return all docs
+        },
+      });
 
-    return body.hits.hits.map((doc) => ({
-      _id: doc._id,
-      truncated: truncateJSON(doc._source, 100),
-    }));
+      return body.hits.hits.map((doc) => ({
+        _id: doc._id,
+        truncated: truncateJSON(doc._source, 100),
+      }));
+    } catch (e) {
+      return false;
+    }
   }
 
   async addDocument(sourceId, index, document) {

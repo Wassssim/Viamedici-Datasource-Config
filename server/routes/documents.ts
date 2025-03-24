@@ -1,4 +1,4 @@
-import { convertElasticsearchSchema } from '../types/type-mapper';
+import { convertElasticsearchMappings } from '../types/type-mapper';
 import ElasticsearchService from '../services/elasticsearchService';
 import logger from '../helpers/logger';
 
@@ -22,11 +22,13 @@ router.get('/:sourceId/indices', async (req, res) => {
 
 router.get('/:sourceId/:index/schema', async (req, res) => {
   try {
-    const schema = await elasticsearchService.getIndexSchema(
+    const mappings = await elasticsearchService.getIndexMappings(
       req.params.sourceId,
       req.params.index
     );
-    res.json(convertElasticsearchSchema(schema));
+    res.json({
+      convertedSchema: convertElasticsearchMappings(mappings.properties),
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -47,7 +49,14 @@ router.get('/:sourceId/:index', async (req, res) => {
       page,
       pageSize
     );
-    res.json(documents);
+
+    if (documents === false) {
+      res
+        .status(400)
+        .json({ message: 'query string does not match selected field types' });
+    } else {
+      res.json(documents);
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

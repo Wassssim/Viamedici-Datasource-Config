@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container elastic-container">
   <button class="back-button" (click)="goBack()">
     <i class="bi bi-arrow-left"></i>
     <span>Back To Source Selection</span>
@@ -41,6 +41,7 @@
       placeholder="Search Documents"
       aria-label="Search"
       aria-describedby="basic-addon2"
+      (keydown.enter)="search()"
     />
     <div class="input-group-append">
       <button
@@ -59,14 +60,34 @@
         (click)="toggleFilterDropdown()"
       >
         Filters
+        <span
+          *ngIf="selectedFieldCount > 0"
+          class="badge badge-pill badge-info ml-2"
+        >
+          {{ selectedFieldCount }}
+        </span>
       </button>
+
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <label class="dropdown-item">
+          <input
+            type="checkbox"
+            [(ngModel)]="selectAllFilters"
+            (change)="toggleSelectAll()"
+          />
+          Select All
+        </label>
+
+        <div class="dropdown-divider"></div>
+
         <label *ngFor="let field of filterFields" class="dropdown-item">
-          <input type="checkbox" [(ngModel)]="field.selected" />
+          <input
+            type="checkbox"
+            [(ngModel)]="field.selected"
+            (change)="onCheckboxChange()"
+          />
           {{ field.name }}
         </label>
-        <div class="dropdown-divider"></div>
-        <button class="btn btn-primary btn-sm mx-2">Apply</button>
       </div>
     </div>
   </div>
@@ -147,11 +168,20 @@
       (onClose)="closeViewModal()"
     ></app-document-viewer-modal>
 
-    <div class="spinner-container" *ngIf="loadingDocuments">
+    <div
+      class="spinner-container"
+      *ngIf="loadingDocuments"
+      id="loadingMoreSpinner"
+    >
       <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
       </div>
     </div>
+
+    <div class="align-self-center mt-5 mb-3" *ngIf="stopInfiniteScroll">
+      <h5><i class="bi bi-box-seam"></i> No more documents</h5>
+    </div>
+
     <div #sentinel class="sentinel"></div>
   </div>
 </div>

@@ -35,3 +35,9 @@ body {
   outline: none;
   text-decoration: underline;
 }
+
+.dropdown-menu {
+  max-height: 40svh;
+  max-width: 300px;
+  overflow: auto;
+}

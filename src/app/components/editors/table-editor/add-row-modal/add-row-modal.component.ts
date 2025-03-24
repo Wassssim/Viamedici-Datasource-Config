@@ -11,7 +11,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { DataSource } from 'src/app/models/datasource-config.model';
 import { Column } from 'src/app/models/table.model';
-import { TableService } from 'src/app/services/table.service';
+import { formatISODateForInput } from 'src/app/helpers/utils';
 
 @Component({
   selector: 'app-add-row-modal',
@@ -60,6 +60,15 @@ export class AddRowModalComponent implements OnInit, OnChanges {
       } else if (col.type === 'json') {
         // For the JSON type column, set a default value and disable the field
         formControls[col.name] = [{ value: '{}', disabled: true }];
+      } else if (col.type === 'datetime') {
+        // Convert ISO datetime to "YYYY-MM-DDTHH:MM" format for <input type="datetime-local">
+        const isoDate = this.data[col.name] ?? '';
+        const formattedDate = isoDate ? formatISODateForInput(isoDate) : '';
+
+        formControls[col.name] = [
+          formattedDate,
+          !col.default && !col.isNullable ? Validators.required : [],
+        ];
       } else {
         formControls[col.name] = [
           this.data[col.name] ?? '',

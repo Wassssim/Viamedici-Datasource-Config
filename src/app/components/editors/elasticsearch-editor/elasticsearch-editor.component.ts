@@ -36,6 +36,8 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
   indexSchema = {};
 
   showFilters = false;
+  selectAllFilters = false;
+  selectedFieldCount: number = 0;
   filterFields: { name: string; selected: boolean }[] = [];
 
   page = 1;
@@ -67,7 +69,8 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
         if (
           target.isIntersecting &&
           !this.loadingDocuments &&
-          !this.stopInfiniteScroll
+          !this.stopInfiniteScroll &&
+          (!this.errorMessage || this.errorMessage === '')
         ) {
           this.loadDocuments(false);
         }
@@ -84,8 +87,27 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
     }
   }
 
+  updateSelectedFieldCount() {
+    this.selectedFieldCount = this.filterFields.filter(
+      (field) => field.selected
+    ).length;
+  }
+
   toggleFilterDropdown() {
     this.showFilters = !this.showFilters;
+  }
+
+  toggleSelectAll() {
+    this.filterFields.forEach(
+      (field) => (field.selected = this.selectAllFilters)
+    );
+    this.selectedFieldCount = this.selectAllFilters
+      ? this.filterFields.length
+      : 0;
+  }
+
+  onCheckboxChange() {
+    this.updateSelectedFieldCount();
   }
 
   fetchIndices() {
@@ -107,9 +129,9 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
     this.documentsService
       .getSchema(this.sourceId, this.selectedIndex)
       .subscribe((response) => {
-        this.indexSchema = response;
+        this.indexSchema = response.convertedSchema;
 
-        this.filterFields = getKeys(response).map((k) => ({
+        this.filterFields = getKeys(this.indexSchema).map((k) => ({
           name: k,
           selected: false,
         }));
@@ -132,7 +154,9 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
         this.sourceId,
         this.selectedIndex,
         this.searchString,
-        this.filterFields.map((field) => field.name),
+        this.filterFields
+          .filter((field) => field.selected)
+          .map((field) => field.name),
         this.page,
         this.pageSize
       )
@@ -146,6 +170,10 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
         (error) => {
           console.error('Error fetching documents', error);
           this.loadingDocuments = false;
+
+          console.log(error);
+          if (error.status === 400) this.errorMessage = error.error.message;
+          else this.errorMessage = 'Error fetching documents';
         }
       );
   }

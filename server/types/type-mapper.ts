@@ -24,7 +24,7 @@ const postgresSqlTypeMap: Record<string, string> = {
   json: 'object',                   // JSON data (can be parsed as an object)
   'double precision': 'number',       // Double precision floating-point number
   real: 'number',                   // Single precision floating-point number
-  bytea: 'Buffer',                  // Binary data
+  bytea: 'buffer',                  // Binary data
   uuid: 'string',                   // Universally unique identifier
   inet: 'string',                   // IP address (IPv4 or IPv6)
   time: 'string',                   // Time without time zone
@@ -40,21 +40,47 @@ const postgresSqlTypeMap: Record<string, string> = {
   circle: 'string',                 // Geospatial circle (represented as string)
 };
 
-const mssqlTypeMAp = {
-  // MSSQL types
+const mssqlTypeMap = {
+  // Numeric Types
   int: 'number',
   bigint: 'number',
   smallint: 'number',
+  tinyint: 'number',
   bit: 'boolean',
+  decimal: 'number',
+  numeric: 'number',
+  float: 'number',
+  real: 'number',
+  money: 'number',
+  smallmoney: 'number',
+
+  // String Types
   varchar: 'string',
   char: 'string',
+  text: 'string',
+  nvarchar: 'string',
+  nchar: 'string',
+  ntext: 'string',
+
+  // Date/Time Types
   datetime: 'datetime',
   date: 'date',
-  float: 'number',
-  decimal: 'number',
-  text: 'string',
-  ntext: 'string',
-  real: 'number',
+  time: 'time',
+  datetime2: 'datetime',
+  smalldatetime: 'datetime',
+  datetimeoffset: 'datetime',
+
+  // Binary Types
+  binary: 'binary',
+  varbinary: 'binary',
+  image: 'binary',
+
+  // Unique Identifier
+  uniqueidentifier: 'string',
+
+  // XML & JSON
+  xml: 'xml',
+  json: 'object',
 };
 
 // Mapping Elasticsearch types to TypeScript types
@@ -73,7 +99,7 @@ const elasticsearchTypeMap: Record<string, string> = {
   date: 'Date', // Can be represented as Date object in TypeScript
   nested: 'any',
   object: 'any', // Generic object type
-  binary: 'Buffer', // Binary data can be represented as a Buffer
+  binary: 'buffer', // Binary data can be represented as a Buffer
   ip: 'string', // IP addresses are usually stored as strings
   geo_point: '{ lat: number; lon: number }', // Geo points
   geo_shape: 'any', // Can be further refined based on use case
@@ -191,7 +217,7 @@ export function mapType(
       map = postgresSqlTypeMap;
       break;
     case DataSource.MSSQL:
-      map = mssqlTypeMAp;
+      map = mssqlTypeMap;
       break;
   }
 
@@ -199,5 +225,5 @@ export function mapType(
     return map[type];
   }
 
-  return type;
+  return 'any';
 }

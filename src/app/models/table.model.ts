@@ -21,7 +21,10 @@ export interface Column {
     | 'date'
     | 'string'
     | 'object'
-    | 'Buffer';
+    | 'buffer'
+    | 'xml'
+    | 'binary'
+    | 'any';
   isNullable: false;
   default: string;
   constraints: {

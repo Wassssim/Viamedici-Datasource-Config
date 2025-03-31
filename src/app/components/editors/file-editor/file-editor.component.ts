@@ -13,20 +13,22 @@ export class FileEditorComponent implements OnInit {
   errorMessage = '';
   isSaving = false;
 
-  parsedData: { key: string; value: string }[] = [];
+  parsedData: { originalKey: string; key: string; value: string }[] = [];
   constructor(private fileParserService: FileParserService) {}
 
   async ngOnInit() {
-    this.fileParserService
-      .getPropertiesFileData(this.sourceId)
-      .subscribe((response) => {
+    this.fileParserService.getPropertiesFileData(this.sourceId).subscribe(
+      (response) => {
         const result = Object.keys(response.data).map((key) => ({
+          originalKey: key,
           key,
           value: response.data[key],
         }));
 
         this.parsedData = result;
-      });
+      },
+      () => (this.errorMessage = 'Failed to load file')
+    );
   }
 
   updateFile(data) {

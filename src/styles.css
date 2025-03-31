@@ -41,3 +41,8 @@ body {
   max-width: 300px;
   overflow: auto;
 }
+
+.modal-content {
+  max-height: 80svh;
+  overflow: auto;
+}

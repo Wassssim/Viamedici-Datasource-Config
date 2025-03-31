@@ -104,7 +104,7 @@ tableRoutes.get('/:sourceType/:sourceId/:table/rows', async (req, res) => {
       rows,
       limit,
       offset,
-      nextOffset: offset + limit,
+      nextOffset: offset + rows.length, // Ensures nextOffset matches actual returned rows
     });
   } catch (err) {
     console.error('Error fetching rows:', err);

@@ -1,39 +1,48 @@
 <div class="editor-container container mt-4">
   <div class="table-wrapper">
-    <table class="table table-bordered">
-      <thead class="thead-light">
-        <tr>
-          <th>Key</th>
-          <th>Value</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let entry of data; let i = index; trackBy: trackByIndex">
-          <td>
-            <input
-              type="text"
-              class="form-control"
-              [value]="entry.key"
-              (input)="updateKey(i, $event.target.value)"
-            />
-          </td>
-          <td>
-            <input
-              type="text"
-              class="form-control"
-              [value]="entry.value"
-              (input)="updateValue(i, $event.target.value)"
-            />
-          </td>
-          <td class="text-center">
-            <button class="btn btn-danger btn-sm" (click)="deleteEntry(i)">
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <cdk-virtual-scroll-viewport itemSize="40" class="virtual-scroll">
+      <table class="table table-bordered">
+        <thead class="thead-light">
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *cdkVirtualFor="
+              let entry of data;
+              let i = index;
+              trackBy: trackByIndex
+            "
+          >
+            <td>
+              <input
+                #keyInput
+                type="text"
+                class="form-control"
+                [value]="entry.key"
+                (blur)="updateKey(i, $event.target.value)"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                class="form-control"
+                [value]="entry.value"
+                (blur)="updateValue(i, $event.target.value)"
+              />
+            </td>
+            <td class="text-center">
+              <button class="btn btn-danger btn-sm" (click)="deleteEntry(i)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </cdk-virtual-scroll-viewport>
   </div>
   <div class="d-flex buttons">
     <button class="btn btn-primary" (click)="addEntry()">

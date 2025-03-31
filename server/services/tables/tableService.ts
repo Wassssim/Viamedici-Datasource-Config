@@ -77,6 +77,13 @@ abstract class TableService {
         );
       }
 
+      // MSSQL 2012+ requires ORDER BY when using OFFSET and FETCH NEXT
+      if (options.limit || options.offset) {
+        if (!options.orderBy) {
+          query = query.orderByRaw('(SELECT NULL)'); // Ensures ORDER BY exists to avoid errors
+        }
+      }
+
       if (options.limit) query = query.limit(options.limit);
       if (options.offset) query = query.offset(options.offset);
 

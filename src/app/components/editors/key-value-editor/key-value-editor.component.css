@@ -3,7 +3,13 @@
   flex-direction: column;
   gap: 10px;
 }
+
+.table {
+  max-width: 100%;
+}
+
 .table-wrapper {
+  width: 80svw;
   max-height: 70svh;
   overflow-y: auto;
 }
@@ -16,4 +22,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.virtual-scroll {
+  width: 80svw;
+  height: 400px; /* Adjust this based on your UI */
+  overflow: auto;
 }

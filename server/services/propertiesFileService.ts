@@ -22,12 +22,7 @@ export default class PropertiesFileService {
   }
 
   getPropertiesFilePath(sourceIndex) {
-    const basePath = configService.getConfigBasePath();
-
-    return path.join(
-      basePath,
-      config.sourcesConfig[DataSource.File][sourceIndex].filePath
-    );
+    return config.sourcesConfig[DataSource.File][sourceIndex].filePath;
   }
 
   parseFile(sourceIndex: number): Record<string, string> {
@@ -61,11 +56,35 @@ export default class PropertiesFileService {
   }
 
   updatePropertiesFile(
-    keyValueObject: Record<string, string>,
+    updatedEntries: { originalKey: string; key: string; value: string }[],
     sourceIndex: number
   ) {
+    const existingData = this.parseFile(sourceIndex);
+    const updatedExistingEntries = {};
+    const newEntries = [];
+
+    updatedEntries.forEach((entry) => {
+      if (entry.originalKey !== null) {
+        updatedExistingEntries[entry.originalKey] = entry;
+      } else {
+        newEntries.push(entry);
+      }
+    });
+
+    const updatedData = {};
+    Object.keys(existingData).forEach((originalKey) => {
+      if (originalKey in updatedExistingEntries) {
+        const { key, value } = updatedExistingEntries[originalKey];
+        updatedData[key] = value;
+      } else {
+        updatedData[originalKey] = existingData[originalKey];
+      }
+    });
+
+    newEntries.forEach((entry) => (updatedData[entry.key] = entry.value));
+
     this.createPropertiesFile(
-      keyValueObject,
+      updatedData,
       this.getPropertiesFilePath(sourceIndex)
     );
   }

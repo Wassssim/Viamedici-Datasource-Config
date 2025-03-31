@@ -8,6 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { AgGridModule } from 'ag-grid-angular';
 import 'ag-grid-enterprise';
 import { LicenseManager } from 'ag-grid-enterprise';
@@ -73,6 +74,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     FontAwesomeModule,
     ReactiveFormsModule,
     NgSelectModule,
+    ScrollingModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

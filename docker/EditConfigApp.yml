@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+    backend:
+        build:
+            context: .
+            dockerfile: DockerfileBackend
+        ports:
+          - "4500:4500"
+        restart: always
+        networks:
+          - app_network
+        volumes:
+          - ./config.json:/opt/viamedici/VMPROGRAMS/EditConfigApp/config.json:ro
+          - /opt/viamedici/EPIMHOME/viaMEDICI/WEB-INF/classes/resources/:/opt/viamedici/EPIMHOME/viaMEDICI/WEB-INF/classes/resources/
+      
+    frontend:
+        build: 
+            context: .
+            dockerfile: DockerfileFrontend
+        ports: 
+          - "8181:8181"
+        depends_on: 
+          - backend
+        restart: always
+        networks:
+          - app_network
+ 
+networks:
+    app_network:
+        driver: bridge

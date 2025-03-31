@@ -1,5 +1,6 @@
 import express from 'express';
 import { getConfig } from '../services/configService';
+import path from 'path';
 
 const router = express.Router();
 
@@ -21,8 +22,19 @@ router.get('/sources/:source', (req, res) => {
     let label = req.params.source;
     if ('database' in srcCfg) label += ' - ' + srcCfg.database;
     else if ('host' in srcCfg) label += ' - ' + srcCfg.host;
+    else if ('filePath' in srcCfg) {
+      const fileNameWithoutExt = path.basename(
+        srcCfg.filePath,
+        path.extname(srcCfg.filePath)
+      );
 
-    return { label: label + ' - ' + (idx + 1), id: idx };
+      label += ' - ' + fileNameWithoutExt;
+    }
+
+    return {
+      label: idx + 1 + ' - ' + label,
+      id: idx,
+    };
   });
 
   if (!config) {

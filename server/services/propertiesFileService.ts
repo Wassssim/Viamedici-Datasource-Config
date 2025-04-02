@@ -56,16 +56,26 @@ export default class PropertiesFileService {
   }
 
   updatePropertiesFile(
-    updatedEntries: { originalKey: string; key: string; value: string }[],
+    updatedEntries: {
+      originalKey: string;
+      key: string;
+      value: string;
+      isDeleted: boolean;
+    }[],
     sourceIndex: number
   ) {
     const existingData = this.parseFile(sourceIndex);
     const updatedExistingEntries = {};
+    const deletedExistingEntries = {};
     const newEntries = [];
 
     updatedEntries.forEach((entry) => {
       if (entry.originalKey !== null) {
-        updatedExistingEntries[entry.originalKey] = entry;
+        if (entry.isDeleted) {
+          deletedExistingEntries[entry.originalKey] = entry;
+        } else {
+          updatedExistingEntries[entry.originalKey] = entry;
+        }
       } else {
         newEntries.push(entry);
       }
@@ -76,7 +86,7 @@ export default class PropertiesFileService {
       if (originalKey in updatedExistingEntries) {
         const { key, value } = updatedExistingEntries[originalKey];
         updatedData[key] = value;
-      } else {
+      } else if (!(originalKey in deletedExistingEntries)) {
         updatedData[originalKey] = existingData[originalKey];
       }
     });

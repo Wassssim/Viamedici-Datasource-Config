@@ -22,6 +22,7 @@ export class KeyValueEditorComponent {
     updated: boolean;
     key: string;
     value: string;
+    isDeleted: boolean;
   }[] = [];
   @Input() isSaving = false;
   @Output() fileUpdated = new EventEmitter<any>();
@@ -49,6 +50,7 @@ export class KeyValueEditorComponent {
         updated: true,
         key: `new_key_${this.data.length + 1}`,
         value: '',
+        isDeleted: false,
       },
     ];
 
@@ -65,13 +67,13 @@ export class KeyValueEditorComponent {
   }
 
   deleteEntry(index: number) {
-    this.data.splice(index, 1);
-    this.data = [...this.data];
+    this.data[index].isDeleted = true;
   }
 
   updateFile() {
     const updatedData = this.data.filter(
       (entry) =>
+        entry.isDeleted ||
         entry.updated ||
         entry.originalKey === null ||
         entry.key !== entry.originalKey

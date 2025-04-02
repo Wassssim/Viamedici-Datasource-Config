@@ -111,6 +111,9 @@ abstract class TableService {
 
   isTableAccessible(sourceId: number, tableName: string) {
     const config = this.getCurrentConfig(sourceId);
+
+    if (!config.tables || config.tables.length === 0) return true;
+
     return config.tables.some(({ pattern }) => {
       const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`, 'i');
       return regex.test(tableName);

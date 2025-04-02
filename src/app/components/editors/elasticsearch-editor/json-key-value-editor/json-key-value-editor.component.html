@@ -1,5 +1,6 @@
 <div class="json-editor">
-  <div *ngFor="let item of data | keyvalue">
+  <h5 class="editor-title"><i class="bi bi-braces"></i> Object</h5>
+  <div *ngFor="let item of data | keyvalue" class="key-value-pair">
     <div class="key-value-pair">
       <input
         type="text"
@@ -10,16 +11,36 @@
       />
 
       <ng-container *ngIf="isObject(data[item.key]); else primitiveValue">
-        <button class="expand-btn" (click)="toggleExpand(item.key)">
-          {{ expandedKeys.has(item.key) ? "▼" : "▶" }}
+        <button
+          class="expand-btn btn btn-outline-secondary btn-sm"
+          (click)="toggleExpand(item.key)"
+        >
+          <i
+            class="bi"
+            [ngClass]="
+              expandedKeys.has(item.key)
+                ? 'bi-chevron-down'
+                : 'bi-chevron-right'
+            "
+          ></i>
         </button>
       </ng-container>
 
-      <button class="remove-btn" (click)="removeKey(item.key)">❌</button>
+      <button
+        class="remove-btn btn btn-outline-danger btn-sm"
+        (click)="removeKey(item.key)"
+      >
+        <i class="bi bi-trash"></i>
+      </button>
     </div>
 
+    <!-- Handle nested objects -->
     <div
-      *ngIf="isObject(data[item.key]) && expandedKeys.has(item.key)"
+      *ngIf="
+        isObject(data[item.key]) &&
+        !isArray(data[item.key]) &&
+        expandedKeys.has(item.key)
+      "
       class="nested-object"
     >
       <app-json-key-value-editor
@@ -29,13 +50,22 @@
       ></app-json-key-value-editor>
     </div>
 
+    <!-- Handle arrays using the new component -->
+    <div *ngIf="isArray(data[item.key])">
+      <app-json-array-editor
+        [data]="data[item.key]"
+        [schema]="schema[item.key]"
+        (dataChange)="onValueChange(item.key, $event)"
+      ></app-json-array-editor>
+    </div>
+
     <ng-template #primitiveValue>
       <ng-container *ngIf="isString(data[item.key])">
         <input
           type="text"
           [value]="data[item.key]"
           (change)="onValueChange(item.key, $event.target.value)"
-          class="json-value"
+          class="form-control json-value"
         />
       </ng-container>
 
@@ -44,7 +74,7 @@
           type="number"
           [value]="data[item.key]"
           (change)="onValueChange(item.key, $event.target.value)"
-          class="json-value"
+          class="form-control json-value"
         />
       </ng-container>
 
@@ -53,7 +83,7 @@
           type="checkbox"
           [checked]="data[item.key]"
           (change)="onValueChange(item.key, $event.target.checked)"
-          class="json-value"
+          class="form-check-input"
         />
       </ng-container>
     </ng-template>

@@ -188,6 +188,8 @@ export default class ElasticsearchService {
   isIndexAccessible(sourceId: number, esIndex: string) {
     const config = this.getCurrentConfig(sourceId);
 
+    if (!config.indices || config.indices.length === 0) return true;
+
     return config.indices.some((pattern) => {
       const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`, 'i');
       return regex.test(esIndex);

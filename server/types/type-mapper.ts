@@ -97,7 +97,7 @@ const elasticsearchTypeMap: Record<string, string> = {
   keyword: 'string',
   text: 'string',
   date: 'Date', // Can be represented as Date object in TypeScript
-  nested: 'any',
+  nested: 'array',
   object: 'any', // Generic object type
   binary: 'buffer', // Binary data can be represented as a Buffer
   ip: 'string', // IP addresses are usually stored as strings
@@ -118,8 +118,12 @@ export function mapElasticsearchType(type: string): string {
 export function convertElasticsearchMappings(schema: any): any {
   return Object.entries(schema).reduce((acc, [key, value]: any) => {
     if (value.properties) {
-      // Recursively map properties for nested objects
-      acc[key] = convertElasticsearchMappings(value.properties);
+      if (value.type === 'nested') {
+        // Recursively map properties for nested objects
+        acc[key] = [convertElasticsearchMappings(value.properties)];
+      } else {
+        acc[key] = convertElasticsearchMappings(value.properties);
+      }
     } else {
       acc[key] = mapElasticsearchType(value.type);
     }

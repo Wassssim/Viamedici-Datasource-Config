@@ -27,8 +27,10 @@ export class JsonKeyValueEditorComponent {
   parseSchema(schema: Record<string, any>): any {
     const res: Record<string, any> = {};
     Object.entries(schema).forEach(([key, value]) => {
-      if (typeof value === 'object' && value !== null) {
-        res[key] = this.parseSchema(value); // Handle nested objects recursively
+      if (this.isObject(value)) {
+        res[key] = this.parseSchema(value);
+      } else if (this.isArray(value)) {
+        res[key] = value.length > 0 ? [this.parseSchema(value[0])] : []; // Handle nested objects recursively
       } else {
         res[key] = this.getDefaultValueForType(value); // Set default value based on type
       }
@@ -44,6 +46,8 @@ export class JsonKeyValueEditorComponent {
         return false;
       case 'string':
         return '';
+      case 'array':
+        return []; // New case for arrays
       default:
         return ''; // Default fallback for unknown types
     }
@@ -74,8 +78,34 @@ export class JsonKeyValueEditorComponent {
     this.dataChange.emit(this.data);
   }
 
+  // New methods for handling arrays
+  onArrayValueChange(key: string, index: number, newValue: any) {
+    this.data[key][index] = newValue;
+    this.dataChange.emit(this.data);
+  }
+
+  onArrayObjectChange(key: string, index: number, newValue: any) {
+    this.data[key][index] = newValue;
+    this.dataChange.emit(this.data);
+  }
+
+  addArrayItem(key: string) {
+    this.data[key] = this.data[key] || [];
+    this.data[key].push(this.getDefaultValueForType('string')); // Default to string
+    this.dataChange.emit(this.data);
+  }
+
+  removeArrayItem(key: string, index: number) {
+    this.data[key].splice(index, 1);
+    this.dataChange.emit(this.data);
+  }
+
   isObject(value: any): boolean {
-    return typeof value === 'object' && value !== null;
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  isArray(value: any): boolean {
+    return Array.isArray(value);
   }
 
   isNumber(value: any): boolean {
@@ -88,5 +118,11 @@ export class JsonKeyValueEditorComponent {
 
   isString(value: any): boolean {
     return typeof value === 'string';
+  }
+
+  isPrimitive(value: any): boolean {
+    return (
+      this.isString(value) || this.isNumber(value) || this.isBoolean(value)
+    );
   }
 }

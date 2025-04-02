@@ -23,6 +23,7 @@ export class FileEditorComponent implements OnInit {
           originalKey: key,
           key,
           value: response.data[key],
+          isDeleted: false,
         }));
 
         this.parsedData = result;

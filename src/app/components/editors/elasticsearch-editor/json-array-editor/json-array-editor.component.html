@@ -1,0 +1,33 @@
+<div class="array-container">
+  <h5 class="array-title"><i class="bi bi-list"></i> Array</h5>
+
+  <div *ngFor="let element of data; let i = index" class="array-item">
+    <ng-container *ngIf="isPrimitive(element); else objectEditor">
+      <input
+        type="text"
+        [value]="element"
+        (change)="onPrimitiveChange(i, $event.target.value)"
+        class="form-control array-input"
+      />
+    </ng-container>
+
+    <ng-template #objectEditor>
+      <app-json-key-value-editor
+        [schema]="schema"
+        [data]="element"
+        (dataChange)="onObjectChange(i, $event)"
+      ></app-json-key-value-editor>
+    </ng-template>
+
+    <button
+      class="remove-btn btn btn-outline-danger btn-sm"
+      (click)="removeItem(i)"
+    >
+      <i class="bi bi-trash"></i>
+    </button>
+  </div>
+
+  <button class="add-btn btn btn-outline-success btn-sm" (click)="addItem()">
+    <i class="bi bi-plus-circle"></i> Add Item
+  </button>
+</div>

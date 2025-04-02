@@ -34,9 +34,9 @@
     "Elasticsearch": [
       {
         "protocol": "http",
-        "host": "10.31.11.36",
-        "port": 9203,
-        "indices": ["*hierarchies*"]
+        "host": "localhost",
+        "port": 9200,
+        "indices": ["*"]
       }
     ]
   }

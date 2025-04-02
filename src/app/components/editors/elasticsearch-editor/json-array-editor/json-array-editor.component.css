@@ -1,50 +1,49 @@
-.json-editor {
-  margin-left: 12px;
-  padding: 12px;
-  border-left: 3px dashed #0d6efd;
-  background: #eef5ff;
+.array-container {
+  margin-left: 16px;
+  padding-left: 12px;
+  border-left: 3px dashed #007bff;
+  background: #f8f9fa;
+  padding: 10px;
   border-radius: 6px;
-  width: fit-content;
 }
 
-.editor-title {
+.array-title {
   font-size: 16px;
   font-weight: bold;
-  color: #0d6efd;
+  color: #007bff;
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 10px;
 }
 
-.key-value-pair {
+.array-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  gap: 10px;
+  margin-bottom: 8px;
   padding: 6px;
-  background: white;
   border-radius: 4px;
+  background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.json-key {
-  width: 120px;
-  font-weight: bold;
-}
-
-.json-value {
+.array-input {
   flex-grow: 1;
+  padding: 6px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
 }
 
-.expand-btn,
+.add-btn,
 .remove-btn {
   display: flex;
   align-items: center;
+  gap: 4px;
   transition: all 0.2s ease-in-out;
 }
 
-.expand-btn:hover,
+.add-btn:hover,
 .remove-btn:hover {
   transform: scale(1.1);
 }

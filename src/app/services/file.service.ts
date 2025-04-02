@@ -21,7 +21,12 @@ export class FileParserService {
 
   updatePropertiesFileData(
     sourceId: string,
-    data: { originalKey: string; key: string; value: string }[]
+    data: {
+      originalKey: string;
+      key: string;
+      value: string;
+      isDeleted: boolean;
+    }[]
   ): Observable<any> {
     return this.http.put(`${this.apiUrl}/files/${sourceId}`, { data });
   }

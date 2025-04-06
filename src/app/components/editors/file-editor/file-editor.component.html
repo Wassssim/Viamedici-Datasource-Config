@@ -1,10 +1,9 @@
-<div class="container file-editor">
-  <button class="back-button" (click)="goBack()">
-    <i class="bi bi-arrow-left"></i>
-    <span>Back To Source Selection</span>
-  </button>
+<div class="file-editor">
+  <div class="parsing-spinner" *ngIf="isParsing && !errorMessage">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
   <app-key-value-editor
-    *ngIf="parsedData"
+    *ngIf="showEditor && !isParsing && parsedData"
     [isSaving]="isSaving"
     [data]="parsedData"
     (fileUpdated)="updateFile($event)"

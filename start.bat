@@ -18,5 +18,6 @@ exit /b 1
 
 :start
 echo Starting the application...
+%COMPOSE_CMD% -f EditConfigApp.yml down
 %COMPOSE_CMD% -f EditConfigApp.yml up -d
 echo Application started successfully!

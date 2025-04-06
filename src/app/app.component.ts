@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ConfigService } from './services/config.service';
-import { DataSourceConfig, DataSource } from './models/datasource-config.model';
+import { DataSourceConfig } from './models/datasource-config.model';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +10,7 @@ export class AppComponent implements OnInit {
   config: DataSourceConfig | null = null;
   selectedSource: { sourceType: string; id: number };
 
-  constructor(private configService: ConfigService) {}
+  constructor() {}
 
   ngOnInit() {}
 

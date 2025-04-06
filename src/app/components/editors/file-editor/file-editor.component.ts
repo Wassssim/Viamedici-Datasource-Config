@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FileParserService } from 'src/app/services/file.service';
 
 @Component({
@@ -6,17 +13,39 @@ import { FileParserService } from 'src/app/services/file.service';
   templateUrl: './file-editor.component.html',
   styleUrls: ['./file-editor.component.css'],
 })
-export class FileEditorComponent implements OnInit {
+export class FileEditorComponent implements OnInit, OnChanges {
   @Input('id') sourceId;
-  @Output() exit = new EventEmitter<any>();
 
   errorMessage = '';
+  isParsing = false;
   isSaving = false;
+  showEditor = false;
 
   parsedData: { originalKey: string; key: string; value: string }[] = [];
   constructor(private fileParserService: FileParserService) {}
 
-  async ngOnInit() {
+  ngOnInit() {
+    this.loadData();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['sourceId'] && !changes['sourceId'].firstChange) {
+      this.resetState();
+      this.loadData();
+    }
+  }
+
+  resetState() {
+    this.errorMessage = '';
+    this.isParsing = false;
+    this.isSaving = false;
+    this.showEditor = false;
+    this.parsedData = [];
+  }
+
+  loadData() {
+    this.isParsing = true;
+    this.showEditor = false;
     this.fileParserService.getPropertiesFileData(this.sourceId).subscribe(
       (response) => {
         const result = Object.keys(response.data).map((key) => ({
@@ -27,8 +56,13 @@ export class FileEditorComponent implements OnInit {
         }));
 
         this.parsedData = result;
+        this.isParsing = false;
+        this.showEditor = true;
       },
-      () => (this.errorMessage = 'Failed to load file')
+      () => {
+        this.isParsing = false;
+        this.errorMessage = 'Failed to load file';
+      }
     );
   }
 
@@ -45,9 +79,5 @@ export class FileEditorComponent implements OnInit {
           this.isSaving = false;
         }
       );
-  }
-
-  goBack() {
-    this.exit.emit();
   }
 }

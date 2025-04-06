@@ -1,6 +1,7 @@
 <div class="dropdown">
+  <h5 style="margin-bottom: 20px">Source</h5>
   <button
-    class="btn btn-secondary dropdown-toggle"
+    class="btn btn-outline-dark dropdown-toggle"
     type="button"
     id="sourcesDropdown"
     data-toggle="dropdown"
@@ -23,15 +24,18 @@
 
 <div class="dropdown" *ngIf="selectedSourceType">
   <button
-    class="btn btn-secondary dropdown-toggle"
+    class="btn btn-outline-dark dropdown-toggle text-truncate"
     type="button"
     id="sourcesDropdown"
     data-toggle="dropdown"
     aria-haspopup="true"
     aria-expanded="false"
+    [attr.title]="selectedSourceLabel"
+    style="max-width: 190px"
   >
     {{ selectedSource ? selectedSourceLabel : "Select a source" }}
   </button>
+
   <div class="dropdown-menu" aria-labelledby="sourcesDropdown">
     <button
       *ngFor="let source of sources"

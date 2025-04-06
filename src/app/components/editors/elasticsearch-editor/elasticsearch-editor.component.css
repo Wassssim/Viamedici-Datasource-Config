@@ -1,8 +1,7 @@
 .elastic-container {
-  height: 100svh;
-  max-height: 100svh;
-  width: 80vw;
-  padding: 10px 0 10px 0;
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
 }
 
 .documents {

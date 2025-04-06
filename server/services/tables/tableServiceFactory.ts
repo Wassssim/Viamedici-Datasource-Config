@@ -1,7 +1,6 @@
 import { DataSource } from '../../types/data-source-config';
 import PostgresService from './postgresService';
 import MssqlService from './mssqlService';
-import TableService from './tableService';
 
 class ServiceFactory {
   static services = {

@@ -27,9 +27,7 @@ router.get('/:sourceId/:index/schema', async (req, res) => {
       req.params.index
     );
 
-    console.log(
-      JSON.stringify(convertElasticsearchMappings(mappings.properties), null, 4)
-    );
+    //console.log(JSON.stringify(mappings.properties, null, 4));
 
     res.json({
       convertedSchema: convertElasticsearchMappings(mappings.properties),

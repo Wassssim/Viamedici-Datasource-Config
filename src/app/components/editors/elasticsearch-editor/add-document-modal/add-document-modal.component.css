@@ -2,6 +2,15 @@
   max-width: 80svw;
   width: fit-content;
 }
+
 .modal-content {
-  width: 80svw;
+  width: fit-content;
+  max-width: 80svw;
+  overflow: unset;
+}
+
+.modal-body {
+  padding: 10px;
+  overflow: auto;
+  width: fit-content;
 }

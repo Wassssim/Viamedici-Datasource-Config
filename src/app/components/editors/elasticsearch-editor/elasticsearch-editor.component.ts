@@ -6,6 +6,7 @@ import {
   Input,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { DocumentsService } from '../../../services/documents.service';
@@ -21,7 +22,6 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
   @ViewChild('sentinel') sentinel: ElementRef;
 
   @Input('id') sourceId;
-  @Output() exit = new EventEmitter<any>();
 
   indices: string[] = [];
   documents: any[] = [];
@@ -59,9 +59,39 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
     this.setupIntersectionObserver();
   }
 
-  setupIntersectionObserver() {
-    console.log('setupIntersectionObserver', this.sentinel);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['sourceId'] && !changes['sourceId'].firstChange) {
+      this.resetState();
+      this.fetchIndices();
+    }
+  }
 
+  resetState() {
+    this.indices = [];
+    this.documents = [];
+    this.selectedIndex = null;
+    this.editingDocumentId = null;
+    this.editingDocumentIndex = null;
+    this.jsonString = '';
+    this.errorMessage = '';
+    this.loading = true;
+    this.loadingDocuments = false;
+    this.searchString = undefined;
+    this.indexSchema = {};
+
+    this.showFilters = false;
+    this.selectAllFilters = false;
+    this.selectedFieldCount = 0;
+    this.filterFields = [];
+
+    this.page = 1;
+    this.pageSize = 15;
+    this.stopInfiniteScroll = false;
+
+    this.viewingDocumentId = null;
+  }
+
+  setupIntersectionObserver() {
     this.observer = new IntersectionObserver(
       (entries) => {
         const target = entries[0];
@@ -241,10 +271,6 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
     this.errorMessage = '';
     this.searchString = this.searchString.trim();
     this.loadDocuments();
-  }
-
-  goBack() {
-    this.exit.emit();
   }
 
   viewDocument(documentId: string) {

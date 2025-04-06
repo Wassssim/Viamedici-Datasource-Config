@@ -2,6 +2,31 @@
   height: 100%;
   padding: 20px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  align-content: flex-start;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.source-card {
+  width: 230px;
+  max-width: 100%;
+  min-width: fit-content;
+}
+
+.source-card .card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.editor-card {
+  flex-grow: 1;
+  height: 92%;
+}
+
+.editor-card .card-body {
+  padding: 20px 10px 10px 20px;
 }

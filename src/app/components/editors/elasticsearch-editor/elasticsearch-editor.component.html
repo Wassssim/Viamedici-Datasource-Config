@@ -1,10 +1,5 @@
 <div class="container elastic-container">
-  <button class="back-button" (click)="goBack()">
-    <i class="bi bi-arrow-left"></i>
-    <span>Back To Source Selection</span>
-  </button>
-
-  <h2>Elasticsearch Document Editor</h2>
+  <h5 style="margin-bottom: 15px">Elasticsearch Document Editor</h5>
 
   <div *ngIf="indices.length === 0 && !loading">
     <h5>No indices</h5>

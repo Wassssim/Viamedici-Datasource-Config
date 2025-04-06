@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
 }
 
 .table {
@@ -9,8 +10,6 @@
 }
 
 .table-wrapper {
-  width: 80svw;
-  max-height: 70svh;
   overflow-y: auto;
 }
 
@@ -25,7 +24,7 @@
 }
 
 .virtual-scroll {
-  width: 80svw;
-  height: 400px; /* Adjust this based on your UI */
+  height: 60svh; /* Adjust this based on your UI */
+  max-height: 50%;
   overflow: auto;
 }

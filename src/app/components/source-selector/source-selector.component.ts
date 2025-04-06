@@ -34,6 +34,7 @@ export class SourceSelectorComponent implements OnInit {
 
   selectSourceType(type) {
     this.selectedSourceType = type;
+    this.selectedSource = null;
     this.configService.getSources(type).subscribe(
       (res) => (this.sources = res.data),
       (_) => (this.errorMessage = 'Error fetching data sources')

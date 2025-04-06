@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  EventEmitter,
   Input,
   OnChanges,
   OnInit,
@@ -23,7 +22,6 @@ import { Column, GetRowsOptions } from 'src/app/models/table.model';
 export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() sourceType: DataSource;
   @Input('id') sourceId;
-  @Output() exit = new EventEmitter<any>();
   @ViewChild('sentinel') sentinel: ElementRef;
 
   tables: string[] = null;
@@ -57,13 +55,39 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['tableName'] && !changes['tableName'].firstChange) {
-      this.resetComponentState();
+      this.resetState();
       this.loadTableData();
+    } else if (changes['sourceId'] && !changes['sourceId'].firstChange) {
+      this.resetState();
+      this.loadTables();
     }
   }
 
   ngAfterViewInit() {
     this.setupIntersectionObserver();
+  }
+
+  resetState() {
+    this.tables = null;
+    this.selectedTable = null;
+
+    this.columns = [];
+    this.primaryKeys = [];
+
+    this.searchString = '';
+    this.selectedColumn = null;
+    this.rows = [];
+    this.form = null;
+    this.editMode = {};
+    this.errorMessage = '';
+    this.showModal = false;
+    this.loading = false;
+    this.editingRow = null;
+
+    this.loadingRows = false;
+    this.page = 1;
+    this.pageSize = 15;
+    this.isLastPage = false;
   }
 
   loadTables(): void {
@@ -80,19 +104,6 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
     if (this.selectedTable) {
       this.loadTableData();
     }
-  }
-
-  resetComponentState() {
-    // Clear any existing rows, columns, search string, and pagination state
-    this.rows = [];
-    this.columns = [];
-    this.searchString = '';
-    this.selectedColumn = null;
-    this.editMode = {};
-    this.errorMessage = '';
-    this.page = 1;
-    this.isLastPage = false;
-    this.loadingRows = false;
   }
 
   setupIntersectionObserver() {
@@ -339,9 +350,5 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) {
       this.fetchRows();
     }
-  }
-
-  goBack() {
-    this.exit.emit();
   }
 }

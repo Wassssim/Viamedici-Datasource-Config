@@ -1,15 +1,10 @@
 <main class="table-editor">
   <div class="container">
-    <button class="back-button" (click)="goBack()">
-      <i class="bi bi-arrow-left"></i>
-      <span>Back To Source Selection</span>
-    </button>
-
-    <h2>Table Editor</h2>
+    <h5>Table Editor</h5>
 
     <app-loading-spinner *ngIf="!errorMessage && !tables"></app-loading-spinner>
     <div class="table-list" *ngIf="tables">
-      <h5 style="margin: 0">Table:</h5>
+      <label style="margin: 0">Table:</label>
       <app-table-list
         [tables]="tables"
         (selectEvent)="handleTableSelect($event)"

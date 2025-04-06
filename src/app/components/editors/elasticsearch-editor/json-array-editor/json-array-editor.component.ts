@@ -9,6 +9,7 @@ export class JsonArrayEditorComponent {
   @Input() data: any[] = [];
   @Input() schema: Record<string, any> = {};
   @Output() dataChange = new EventEmitter<any[]>();
+  collapsed: boolean = true;
 
   isPrimitive(value: any): boolean {
     return typeof value !== 'object' || value === null;
@@ -55,5 +56,9 @@ export class JsonArrayEditorComponent {
       default:
         return {}; // Default for objects
     }
+  }
+
+  toggleCollapse() {
+    this.collapsed = !this.collapsed;
   }
 }

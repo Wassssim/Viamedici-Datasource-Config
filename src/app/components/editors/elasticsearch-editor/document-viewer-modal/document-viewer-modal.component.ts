@@ -15,15 +15,23 @@ export class DocumentViewerModalComponent implements OnInit {
 
   document: any;
   errorMessage = null;
+  isLoading = true;
 
   constructor(private documentService: DocumentsService) {}
 
   ngOnInit() {
+    this.isLoading = true;
     this.documentService
       .getDocument(this.sourceId, this.index, this.documentId)
       .subscribe(
-        (data) => (this.document = JSON.stringify(data, null, 4)),
-        (err) => (this.errorMessage = 'Error fetching document')
+        (data) => {
+          this.document = JSON.stringify(data, null, 4);
+          this.isLoading = false;
+        },
+        () => {
+          this.errorMessage = 'Error fetching document';
+          this.isLoading = false;
+        }
       );
   }
 

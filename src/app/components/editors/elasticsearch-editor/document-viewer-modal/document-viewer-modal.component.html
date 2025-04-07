@@ -8,6 +8,7 @@
         </button>
       </div>
       <div class="modal-body">
+        <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
         <app-error-message-card
           *ngIf="errorMessage"
           [errorMessage]="errorMessage"

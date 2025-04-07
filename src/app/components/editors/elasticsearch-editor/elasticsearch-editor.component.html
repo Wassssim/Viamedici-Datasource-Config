@@ -64,6 +64,17 @@
       </button>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <input
+          type="text"
+          class="form-control mb-2 ml-2"
+          style="width: 90%"
+          placeholder="Search fields..."
+          [(ngModel)]="filterSearchTerm"
+          (ngModelChange)="onSearchInputChange($event)"
+        />
+
+        <div class="dropdown-divider"></div>
+
         <label class="dropdown-item">
           <input
             type="checkbox"
@@ -75,14 +86,16 @@
 
         <div class="dropdown-divider"></div>
 
-        <label *ngFor="let field of filterFields" class="dropdown-item">
-          <input
-            type="checkbox"
-            [(ngModel)]="field.selected"
-            (change)="onCheckboxChange()"
-          />
-          {{ field.name }}
-        </label>
+        <ng-container *ngFor="let field of filterFields">
+          <label *ngIf="field.show" class="dropdown-item">
+            <input
+              type="checkbox"
+              [(ngModel)]="field.selected"
+              (change)="onCheckboxChange()"
+            />
+            {{ field.name }}
+          </label>
+        </ng-container>
       </div>
     </div>
   </div>

@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { parseSchema } from 'src/app/helpers/elasticUtils';
 
 @Component({
   selector: 'app-json-array-editor',
@@ -30,10 +31,7 @@ export class JsonArrayEditorComponent {
       this.data.push('');
     } else {
       // Create a new object based on the schema structure
-      const newItem: Record<string, any> = {};
-      Object.keys(this.schema[0]).forEach((key) => {
-        newItem[key] = this.getDefaultValueForType(this.schema[0][key]);
-      });
+      const newItem: Record<string, any> = parseSchema(this.schema[0]);
 
       this.data.push(newItem);
     }

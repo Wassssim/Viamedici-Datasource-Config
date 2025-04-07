@@ -2,16 +2,15 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  EventEmitter,
   Input,
   OnInit,
-  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { DocumentsService } from '../../../services/documents.service';
-import { response } from 'express';
-import { getKeys } from 'src/app/helpers/utils';
+import { getElasticsearchMappingKeys } from 'src/app/helpers/elasticUtils';
+import { Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-elasticsearch-editor',
@@ -35,10 +34,13 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
   searchString = undefined;
   indexSchema = {};
 
+  filterSearchTerm: string = '';
+  searchSubject = new Subject<string>();
+  destroy$ = new Subject<void>();
   showFilters = false;
   selectAllFilters = false;
   selectedFieldCount: number = 0;
-  filterFields: { name: string; selected: boolean }[] = [];
+  filterFields: { name: string; selected: boolean; show: boolean }[] = [];
 
   page = 1;
   pageSize = 15;
@@ -53,6 +55,12 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.fetchIndices();
+    this.searchSubject
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe((term) => {
+        this.filterSearchTerm = term;
+        this.updateFilterList();
+      });
   }
 
   ngAfterViewInit() {
@@ -127,6 +135,17 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
     this.showFilters = !this.showFilters;
   }
 
+  onSearchInputChange(term: string) {
+    this.searchSubject.next(term);
+  }
+
+  updateFilterList() {
+    this.filterFields = this.filterFields.map((f) => ({
+      ...f,
+      show: f.name.includes(this.filterSearchTerm) ? true : false,
+    }));
+  }
+
   toggleSelectAll() {
     this.filterFields.forEach(
       (field) => (field.selected = this.selectAllFilters)
@@ -161,10 +180,22 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
       .subscribe((response) => {
         this.indexSchema = response.convertedSchema;
 
-        this.filterFields = getKeys(this.indexSchema).map((k) => ({
-          name: k,
-          selected: false,
-        }));
+        this.filterFields = getElasticsearchMappingKeys(this.indexSchema).map(
+          (k) => ({
+            name: k,
+            selected: false,
+            show: k.includes(this.filterSearchTerm),
+          })
+        );
+
+        this.filterFields = [
+          {
+            name: '_id',
+            selected: false,
+            show: true,
+          },
+          ...this.filterFields,
+        ];
       });
     this.loadDocuments();
   }

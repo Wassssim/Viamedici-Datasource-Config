@@ -5,6 +5,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+import { parseSchema } from 'src/app/helpers/elasticUtils';
 
 @Component({
   selector: 'app-json-key-value-editor',
@@ -20,22 +21,8 @@ export class JsonKeyValueEditorComponent {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['schema'] && !changes['schema'].firstChange) {
-      this.data = this.parseSchema(this.schema);
+      this.data = parseSchema(this.schema);
     }
-  }
-
-  parseSchema(schema: Record<string, any>): any {
-    const res: Record<string, any> = {};
-    Object.entries(schema).forEach(([key, value]) => {
-      if (this.isObject(value)) {
-        res[key] = this.parseSchema(value);
-      } else if (this.isArray(value)) {
-        res[key] = value.length > 0 ? [this.parseSchema(value[0])] : []; // Handle nested objects recursively
-      } else {
-        res[key] = this.getDefaultValueForType(value); // Set default value based on type
-      }
-    });
-    return res;
   }
 
   getDefaultValueForType(type: string) {

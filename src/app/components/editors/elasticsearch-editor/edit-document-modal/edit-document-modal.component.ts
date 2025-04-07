@@ -17,16 +17,26 @@ export class EditDocumentModalComponent {
 
   jsonData: any = {}; // Default JSON data
   errorMessage = '';
+  isLoadingDocument = true;
+  isSaving = false;
 
   constructor(private documentService: DocumentsService) {}
 
   ngOnInit() {
+    this.isLoadingDocument = true;
     this.documentService
       .getDocument(this.sourceId, this.index, this.documentId)
-      .subscribe((data) => {
-        delete data['_id'];
-        this.initialData = data;
-      });
+      .subscribe(
+        (data) => {
+          delete data['_id'];
+          this.initialData = data;
+          this.isLoadingDocument = false;
+        },
+        () => {
+          this.errorMessage = 'Error loading document';
+          this.isLoadingDocument = false;
+        }
+      );
   }
 
   onJsonChange(event: any) {
@@ -40,16 +50,19 @@ export class EditDocumentModalComponent {
   }
 
   saveDocument() {
-    console.log(this.jsonData);
-
+    this.isSaving = true;
     this.documentService
       .updateDocument(this.sourceId, this.index, this.documentId, this.jsonData)
       .subscribe(
         () => {
           this.documentEdited.emit(this.jsonData);
           this.closeModal();
+          this.isSaving = false;
         },
-        () => (this.errorMessage = 'Error Updating Document')
+        () => {
+          this.errorMessage = 'Error Updating Document';
+          this.isSaving = false;
+        }
       );
   }
 }

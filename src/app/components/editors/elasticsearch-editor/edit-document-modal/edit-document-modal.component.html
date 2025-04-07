@@ -8,19 +8,34 @@
         </button>
       </div>
       <div class="modal-body">
-        <app-error-message-card
-          *ngIf="errorMessage"
-          [errorMessage]="errorMessage"
-        ></app-error-message-card>
-        <app-json-key-value-editor
-          [schema]="schema"
-          [data]="initialData"
-          (dataChange)="jsonData = $event"
-        ></app-json-key-value-editor>
+        <app-loading-spinner *ngIf="isLoadingDocument"></app-loading-spinner>
+        <ng-container *ngIf="!isLoadingDocument">
+          <app-error-message-card
+            *ngIf="errorMessage"
+            [errorMessage]="errorMessage"
+          ></app-error-message-card>
+          <app-json-key-value-editor
+            [schema]="schema"
+            [data]="initialData"
+            (dataChange)="jsonData = $event"
+          ></app-json-key-value-editor>
+        </ng-container>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-        <button class="btn btn-primary" (click)="saveDocument()">Save</button>
+        <button
+          class="btn btn-secondary"
+          (click)="closeModal()"
+          [disabled]="isSaving"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-primary"
+          (click)="saveDocument()"
+          [disabled]="isSaving"
+        >
+          Save
+        </button>
       </div>
     </div>
   </div>

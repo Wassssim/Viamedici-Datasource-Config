@@ -1,6 +1,7 @@
 .modal-dialog {
   max-width: 80svw;
   width: fit-content;
+  height: 100svh;
 }
 
 .modal-content {

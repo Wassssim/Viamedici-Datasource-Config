@@ -109,8 +109,10 @@
   </button>
 
   <app-add-document-modal
+    [sourceId]="sourceId"
+    [selectedIndex]="selectedIndex"
     [schema]="indexSchema"
-    (documentAdded)="onDocumentAdded($event)"
+    (documentAdded)="onDocumentAdded()"
   ></app-add-document-modal>
 
   <app-edit-document-modal

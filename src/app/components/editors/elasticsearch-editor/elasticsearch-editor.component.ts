@@ -263,13 +263,8 @@ export class ElasticsearchEditorComponent implements OnInit, AfterViewInit {
       'block';
   }
 
-  onDocumentAdded(newDoc: any) {
-    this.documentsService
-      .addDocument(this.sourceId, this.selectedIndex, newDoc)
-      .subscribe(
-        () => this.loadDocuments(),
-        (error) => console.error('Error adding document', error)
-      );
+  onDocumentAdded() {
+    this.loadDocuments();
   }
 
   onDocumentEditClose() {

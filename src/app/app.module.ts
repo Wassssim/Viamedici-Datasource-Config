@@ -35,6 +35,7 @@ import { EditDocumentModalComponent } from './components/editors/elasticsearch-e
 import { LoadingSpinnerComponent } from './components/ui/loading-spinner/loading-spinner.component';
 import { ErrorMessageCardComponent } from './components/ui/error-message-card/error-message-card.component';
 import { JsonArrayEditorComponent } from './components/editors/elasticsearch-editor/json-array-editor/json-array-editor.component';
+import { AppToastComponent } from './components/ui/app-toast/app-toast.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -65,6 +66,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     LoadingSpinnerComponent,
     ErrorMessageCardComponent,
     JsonArrayEditorComponent,
+    AppToastComponent,
   ],
   imports: [
     BrowserModule,

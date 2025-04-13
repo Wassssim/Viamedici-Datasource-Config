@@ -34,7 +34,9 @@ export class JsonKeyValueEditorComponent {
       case 'string':
         return '';
       case 'array':
-        return []; // New case for arrays
+        return [];
+      case 'Date':
+        return new Date().toISOString().split('T')[0];
       default:
         return ''; // Default fallback for unknown types
     }

@@ -37,7 +37,7 @@
               <app-loading-spinner
                 w="15"
                 h="15"
-                *ngIf="loadingRows"
+                *ngIf="loadingRows && selectedColumn"
               ></app-loading-spinner>
               <span *ngIf="!loadingRows">Search</span>
             </button>
@@ -74,7 +74,7 @@
             <thead>
               <tr>
                 <th *ngFor="let column of columns">{{ column.name }}</th>
-                <th>Actions</th>
+                <th style="width: 160px">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -90,7 +90,7 @@
                     class="btn btn-danger btn-sm"
                     (click)="deleteRow(row.id, i)"
                   >
-                    <i class="bi bi-pencil-square"></i> Delete
+                    <i class="bi bi-trash"></i> Delete
                   </button>
                 </td>
                 <app-add-row-modal
@@ -101,8 +101,10 @@
                   [sourceId]="sourceId"
                   [data]="row"
                   [columns]="columns"
+                  [primaryKeys]="primaryKeys"
+                  [selectedTable]="selectedTable"
                   (closeModalEvent)="closeEditModal(i)"
-                  (saveItemEvent)="saveRow($event, i)"
+                  (saveItemEvent)="saveRow(i)"
                 >
                 </app-add-row-modal>
               </tr>
@@ -127,8 +129,16 @@
     [columns]="columns"
     [sourceType]="sourceType"
     [sourceId]="sourceId"
+    [primaryKeys]="primaryKeys"
+    [selectedTable]="selectedTable"
     (closeModalEvent)="closeModal()"
     (saveItemEvent)="addRow($event)"
   >
   </app-add-row-modal>
+
+  <!-- Success alert -->
+  <app-app-toast
+    [message]="successMessage"
+    *ngIf="successMessage"
+  ></app-app-toast>
 </main>

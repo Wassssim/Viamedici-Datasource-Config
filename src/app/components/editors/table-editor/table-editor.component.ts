@@ -5,7 +5,6 @@ import {
   Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -36,6 +35,7 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   form: FormGroup;
   editMode: { [key: number]: boolean } = {}; // Tracks edited rows
   errorMessage: string = '';
+  successMessage: string = '';
   showModal = false;
   loading: boolean = false;
   editingRow: any;
@@ -54,11 +54,8 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['tableName'] && !changes['tableName'].firstChange) {
-      this.resetState();
-      this.loadTableData();
-    } else if (changes['sourceId'] && !changes['sourceId'].firstChange) {
-      this.resetState();
+    if (changes['sourceId'] && !changes['sourceId'].firstChange) {
+      this.resetState(true);
       this.loadTables();
     }
   }
@@ -67,9 +64,11 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
     this.setupIntersectionObserver();
   }
 
-  resetState() {
-    this.tables = null;
-    this.selectedTable = null;
+  resetState(hardReset = false) {
+    if (hardReset) {
+      this.tables = null;
+      this.selectedTable = null;
+    }
 
     this.columns = [];
     this.primaryKeys = [];
@@ -100,8 +99,10 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   handleTableSelect(tableName: string) {
+    this.errorMessage = '';
     this.selectedTable = tableName;
     if (this.selectedTable) {
+      this.resetState();
       this.loadTableData();
     }
   }
@@ -171,12 +172,13 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
 
   fetchRows(opt?: GetRowsOptions, reset = true) {
     this.loadingRows = true;
+    this.errorMessage = '';
 
     const filterBy = [...(opt?.filterBy ?? [])];
 
     if (
       this.selectedColumn &&
-      this.selectedColumn !== 'All' &&
+      this.selectedColumn !== 'None' &&
       this.searchString !== ''
     ) {
       filterBy.push({
@@ -226,78 +228,40 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
       );
   }
 
-  addRow(form: FormGroup) {
-    if (form.invalid) {
-      this.errorMessage = 'Please fill in all required fields.';
-      return;
-    }
+  addRow(newRow: any) {
+    this.successMessage = 'Row added sucessfully';
+    setTimeout(() => {
+      this.successMessage = '';
+    }, 3000);
 
-    const newRow = this.tableService.preprocessRowData(
-      form.value,
-      this.columns
-    );
-
-    const tempId = `temp_${Date.now()}`;
-    const tempRow = { ...newRow, id: tempId };
-
-    this.rows.push(tempRow);
-
-    this.tableService
-      .insertRow(this.sourceType, this.sourceId, this.selectedTable!, newRow)
-      .subscribe(
-        (response) => {
-          const index = this.rows.findIndex((r) => r.id === tempId);
-          if (index !== -1) {
-            this.rows[index] = response.row;
-          }
-          this.closeModal();
-          form.reset();
-        },
-        (error) => {
-          console.error('Error adding row:', error);
-          this.rows = this.rows.filter((r) => r.id !== tempId);
-          this.errorMessage = 'Failed to add row.';
-        }
-      );
+    this.closeModal();
+    this.rows = [newRow, ...this.rows];
   }
 
   editRow(rowIndex: number) {
     this.editMode[rowIndex] = true;
   }
 
-  saveRow(form: FormGroup, rowIndex: number) {
-    const row = this.tableService.preprocessRowData(form.value, this.columns);
+  saveRow(rowIndex: number) {
+    this.successMessage = 'Row updated sucessfully';
+    setTimeout(() => {
+      this.successMessage = '';
+    }, 3000);
 
     this.tableService
-      .updateRow(
-        this.sourceType,
-        this.sourceId,
-        this.selectedTable!,
-        row,
-        this.rows[rowIndex].id
-      )
-      .subscribe(
-        () => {
-          this.tableService
-            .getRows(this.sourceType, this.sourceId, this.selectedTable, {
-              filterBy: this.primaryKeys.map((k) => ({
-                column: k.name,
-                value: this.rows[rowIndex][k.name] + '',
-                operator: '=',
-              })),
-              limit: 1,
-            })
-            .subscribe((res) => {
-              if (res.rows?.length > 0) this.rows[rowIndex] = res.rows[0];
-            });
+      .getRows(this.sourceType, this.sourceId, this.selectedTable, {
+        filterBy: this.primaryKeys.map((k) => ({
+          column: k.name,
+          value: this.rows[rowIndex][k.name] + '',
+          operator: '=',
+        })),
+        limit: 1,
+      })
+      .subscribe((res) => {
+        if (res.rows?.length > 0) this.rows[rowIndex] = res.rows[0];
+      });
 
-          this.editMode[rowIndex] = false;
-        },
-        (error) => {
-          console.error('Error updating row:', error);
-          this.errorMessage = 'Failed to update row.';
-        }
-      );
+    this.editMode[rowIndex] = false;
   }
 
   deleteRow(rowId: number, rowIndex: number) {
@@ -332,8 +296,10 @@ export class TableEditorComponent implements OnInit, OnChanges, AfterViewInit {
   onColumnSelect(column: string) {
     this.errorMessage = '';
     if (this.selectedColumn !== column && column === 'None') {
-      this.fetchRows();
+      this.selectedColumn = column;
+      this.fetchRows({}, true);
     }
+
     this.selectedColumn = column;
   }
 

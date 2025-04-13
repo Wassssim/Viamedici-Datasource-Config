@@ -73,6 +73,20 @@ export class TableService {
     );
   }
 
+  // Update a row based on arbitrary where condition
+  updateRowWhere(
+    sourceType: string,
+    sourceId: number,
+    table: string,
+    where: Record<string, any>,
+    values: Record<string, any>
+  ) {
+    return this.http.patch<any>(
+      `${this.apiUrl}/tables/${sourceType}/${sourceId}/${table}/rows`,
+      { where, values }
+    );
+  }
+
   // Delete a row from the table
   deleteRow(sourceType: string, sourceId, table: string, rowId: number) {
     return this.http.delete(

@@ -9,8 +9,10 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
+import { getChangedFields } from 'src/app/helpers/utils';
 import { DataSource } from 'src/app/models/datasource-config.model';
 import { Column } from 'src/app/models/table.model';
+import { TableService } from 'src/app/services/table.service';
 
 @Component({
   selector: 'app-add-row-modal',
@@ -25,11 +27,16 @@ export class AddRowModalComponent implements OnInit, OnChanges {
   @Input() selectedItem: any = null;
   @Input() data = {};
   @Input() columns: Column[] = []; // Receive columns from TableEditorComponent
+  @Input() selectedTable: string;
+  @Input() primaryKeys: Column[] = [];
   @Output() closeModalEvent = new EventEmitter<void>();
   @Output() saveItemEvent = new EventEmitter<any>();
 
   submitted = false;
   form: FormGroup = this.fb.group({});
+  errorMessage = '';
+  warningMessage = '';
+  isSaving = false;
 
   /* Foreign Key */
   foreignKeyData: { [key: string]: any[] } = {}; // Store dropdown data
@@ -38,10 +45,16 @@ export class AddRowModalComponent implements OnInit, OnChanges {
   loading: { [key: string]: boolean } = {}; // Prevent multiple calls
   search$ = new Subject<{ term: any; columnName: string }>();
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private tableService: TableService) {}
 
   ngOnInit() {
     this.createForm();
+    if (this.primaryKeys.length === 0) {
+      this.warningMessage = 'This table has no primary key';
+      if (this.editMode)
+        this.warningMessage +=
+          ', updating this row may result in updating other rows.';
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -89,7 +102,79 @@ export class AddRowModalComponent implements OnInit, OnChanges {
 
   saveItem() {
     this.submitted = true;
-    if (this.form.invalid) return;
-    this.saveItemEvent.emit(this.form);
+    this.isSaving = true;
+    this.errorMessage = '';
+    if (this.form.invalid) {
+      this.isSaving = false;
+      return;
+    }
+
+    if (this.editMode) {
+      const updatedData = getChangedFields(this.form, this.data);
+
+      const row = this.tableService.preprocessRowData(
+        updatedData,
+        this.columns
+      );
+
+      if (Object.keys(row).length === 0) {
+        this.isSaving = false;
+        this.errorMessage = 'No field has been edited';
+        setTimeout(() => (this.errorMessage = ''), 2000);
+        return; // No changes to save
+      }
+
+      const whereClause =
+        this.primaryKeys.length > 0
+          ? this.primaryKeys.reduce((acc, key) => {
+              acc[key.name] = this.data[key.name];
+              return acc;
+            }, {})
+          : this.tableService.preprocessRowData(this.data, this.columns);
+
+      this.tableService
+        .updateRowWhere(
+          this.sourceType,
+          this.sourceId,
+          this.selectedTable!,
+          whereClause,
+          row
+        )
+        .subscribe(
+          () => {
+            this.isSaving = false;
+            this.saveItemEvent.emit();
+          },
+          () => {
+            this.isSaving = false;
+            this.errorMessage = 'Failed to update row.';
+          }
+        );
+    } else {
+      if (this.form.invalid) {
+        this.errorMessage = 'Please fill in all required fields.';
+        this.isSaving = false;
+        setTimeout(() => (this.errorMessage = ''), 2000);
+        return;
+      }
+
+      const newRow = this.tableService.preprocessRowData(
+        this.form.value,
+        this.columns
+      );
+
+      this.tableService
+        .insertRow(this.sourceType, this.sourceId, this.selectedTable!, newRow)
+        .subscribe(
+          (response) => {
+            this.isSaving = false;
+            this.saveItemEvent.emit(response.row);
+          },
+          () => {
+            this.isSaving = false;
+            this.errorMessage = 'Failed to add row.';
+          }
+        );
+    }
   }
 }

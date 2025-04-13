@@ -9,7 +9,7 @@ interface FilterCondition {
   value: any;
 }
 
-interface GetRowsOptions {
+export interface GetRowsOptions {
   filterBy?: FilterCondition[];
   limit?: number;
   offset?: number;
@@ -51,57 +51,61 @@ abstract class TableService {
   }
 
   async getRows(sourceId: number, table: string, options: GetRowsOptions = {}) {
-    try {
-      const client = this.getClient(sourceId);
-      let query = client(table).select('*');
+    const client = this.getClient(sourceId);
+    let query = client(table).select('*');
 
-      if (options.filterBy) {
-        options.filterBy.forEach(({ column, operator = '=', value }) => {
-          if (operator === 'IN' && Array.isArray(value)) {
-            query = query.whereIn(column, value);
-          } else if (operator === 'LIKE' || operator === 'ILIKE') {
-            query = query.whereRaw(`CAST(?? AS TEXT) ${operator} ?`, [
-              column,
-              value,
-            ]);
-          } else {
-            query = query.where(column, operator, value);
-          }
-        });
-      }
-
-      if (options.orderBy) {
-        query = query.orderBy(
-          options.orderBy.column,
-          options.orderBy.direction || 'ASC'
-        );
-      }
-
-      // MSSQL 2012+ requires ORDER BY when using OFFSET and FETCH NEXT
-      if (options.limit || options.offset) {
-        if (!options.orderBy) {
-          query = query.orderByRaw('(SELECT NULL)'); // Ensures ORDER BY exists to avoid errors
+    if (options.filterBy) {
+      options.filterBy.forEach(({ column, operator = '=', value }) => {
+        if (operator === 'IN' && Array.isArray(value)) {
+          query = query.whereIn(column, value);
+        } else if (operator === 'LIKE' || operator === 'ILIKE') {
+          query = query.whereRaw(`CAST(?? AS TEXT) ${operator} ?`, [
+            column,
+            value,
+          ]);
+        } else {
+          query = query.where(column, operator, value);
         }
-      }
-
-      if (options.limit) query = query.limit(options.limit);
-      if (options.offset) query = query.offset(options.offset);
-
-      return await query;
-    } catch (error) {
-      console.error('Error fetching rows:', error);
-      throw new Error('Database query failed');
+      });
     }
+
+    if (options.orderBy) {
+      query = query.orderBy(
+        options.orderBy.column,
+        options.orderBy.direction || 'ASC'
+      );
+    }
+
+    // MSSQL 2012+ requires ORDER BY when using OFFSET and FETCH NEXT
+    if (options.limit || options.offset) {
+      if (!options.orderBy) {
+        query = query.orderByRaw('(SELECT NULL)'); // Ensures ORDER BY exists to avoid errors
+      }
+    }
+
+    if (options.limit) query = query.limit(options.limit);
+    if (options.offset) query = query.offset(options.offset);
+
+    return await query;
   }
 
   async insertRow(sourceId: number, table: string, row: any) {
     return await this.getClient(sourceId)(table).insert(row).returning('*');
   }
 
-  async updateRow(sourceId: number, table: string, id: any, row: any) {
+  async updateRowById(sourceId: number, table: string, id: any, row: any) {
     return await this.getClient(sourceId)(table)
       .where({ id })
       .update(row)
+      .returning('*');
+  }
+
+  async updateRow(sourceId: number, table: string, where: any, newValues: any) {
+    console.log(sourceId, table, where, newValues);
+
+    return await this.getClient(sourceId)(table)
+      .where(where)
+      .update(newValues)
       .returning('*');
   }
 

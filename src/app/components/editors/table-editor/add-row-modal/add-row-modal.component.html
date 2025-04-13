@@ -7,8 +7,17 @@
           &times;
         </button>
       </div>
-      <div class="modal-body">
-        <form [formGroup]="form" (ngSubmit)="saveItem()" *ngIf="form">
+
+      <div class="alert alert-warning" role="alert" *ngIf="warningMessage">
+        <i class="bi bi-exclamation-triangle-fill"></i> {{ warningMessage }}
+      </div>
+
+      <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+        <i class="bi bi-exclamation-triangle-fill"></i> {{ errorMessage }}
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="saveItem()" *ngIf="form">
+        <div class="modal-body">
           <div *ngFor="let column of columns" class="form-group">
             <!-- Add a red star for required fields -->
             <label [for]="column.name" *ngIf="column.type !== 'boolean'">
@@ -138,19 +147,21 @@
               {{ column.name }} is required
             </div>
           </div>
+        </div>
 
-          <div class="modal-action-buttons">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              (click)="closeModal()"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
+        <div class="modal-footer modal-action-buttons">
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+            {{ isSaving ? "Saving..." : "Save" }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeModal()"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
